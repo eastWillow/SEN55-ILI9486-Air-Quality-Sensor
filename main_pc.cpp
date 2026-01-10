@@ -16,7 +16,8 @@ int main(int argc, char* argv[]) {
     // Given the task "generate the BMP file", we will run once, update, save, and exit.
 
     // We'll run the loop a few times to simulate data updates
-    for (int i = 0; i < 3; i++) {
+    // With 50ms simulated time per loop, 25 loops = 1.25s, enough to trigger the 1s sensor update.
+    for (int i = 0; i < 25; i++) {
         App_Loop(&mockSensor);
         LCD_Update();
 
