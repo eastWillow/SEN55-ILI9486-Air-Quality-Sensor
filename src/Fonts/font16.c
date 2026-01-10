@@ -37,7 +37,13 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "fonts.h"
+#ifdef ARDUINO
 #include <avr/pgmspace.h>
+#else
+#ifndef PROGMEM
+#define PROGMEM
+#endif
+#endif
 
 // 
 //  Font data for Courier New 12pt
