@@ -2,9 +2,7 @@
 #include "src/Sensor/SensorMock.h"
 #include "src/Display/LCD_Driver.h"
 #include "src/Display/LCD_Driver_SDL.h"
-#ifndef __EMSCRIPTEN__
 #include <SDL2/SDL.h>
-#endif
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
