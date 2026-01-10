@@ -37,7 +37,13 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "fonts.h"
+#ifdef ARDUINO
 #include <avr/pgmspace.h>
+#else
+#ifndef PROGMEM
+#define PROGMEM
+#endif
+#endif
 
 // Character bitmaps for Courier New 15pt
 const uint8_t Font20_Table[] PROGMEM = 
