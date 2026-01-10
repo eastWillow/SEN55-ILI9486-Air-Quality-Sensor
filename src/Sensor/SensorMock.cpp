@@ -1,3 +1,5 @@
+#ifndef ARDUINO
+
 #include "SensorMock.h"
 
 uint16_t SensorMock::begin() {
@@ -42,3 +44,4 @@ void SensorMock::setTemperatureOffsetSimple(float tempOffset) {
 void SensorMock::errorToString(uint16_t error, char* errorMessage, uint16_t errorMessageLen) {
     snprintf(errorMessage, errorMessageLen, "Mock Error %d", error);
 }
+#endif

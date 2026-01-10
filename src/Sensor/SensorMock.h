@@ -1,3 +1,7 @@
+#ifndef ARDUINO
+
+#ifndef ARDUINO
+
 #ifndef SENSOR_MOCK_H
 #define SENSOR_MOCK_H
 
@@ -28,4 +32,6 @@ public:
     void errorToString(uint16_t error, char* errorMessage, uint16_t errorMessageLen) override;
 };
 
+#endif
+#endif
 #endif
