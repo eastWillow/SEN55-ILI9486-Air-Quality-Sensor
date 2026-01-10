@@ -2,6 +2,7 @@
 #include "../Display/LCD_GUI.h"
 #include "../Display/LCD_Driver.h"
 #include "../Display/DEV_Config.h"
+#include "../Display/LCD_Touch.h"
 #include <stdio.h>
 
 #if defined(ARDUINO)
@@ -21,6 +22,21 @@ using namespace std;
 #ifndef ARDUINO
 // A simple adapter if needed, or just change logic to use snprintf
 #endif
+
+// Application State
+static AppState currentState = APP_STATE_MAIN;
+
+// Button Coordinates
+#define BTN_INFO_X 400
+#define BTN_INFO_Y 10
+#define BTN_INFO_W 70
+#define BTN_INFO_H 30
+
+#define BTN_BACK_X 10
+#define BTN_BACK_Y 280
+#define BTN_BACK_W 70
+#define BTN_BACK_H 30
+
 
 // 用於顯示數值的緩衝區
 static char buf[30];
@@ -60,6 +76,33 @@ static void displayValue(uint16_t x, uint16_t y, const char* label, float value,
     GUI_DisString_EN(valX, y, valStr, &Font20, LCD_BACKGROUND, color);
 }
 
+void DrawMainScreen() {
+    LCD_Clear(LCD_BACKGROUND);
+    // 顯示標題
+    GUI_DisString_EN(10, 10, "SEN55 Air Quality", &Font24, LCD_BACKGROUND, BLUE);
+    GUI_DrawLine(0, 40, 480, 40, BLUE, LINE_SOLID, DOT_PIXEL_2X2);
+
+    // Draw Info Button
+    GUI_DrawRectangle(BTN_INFO_X, BTN_INFO_Y, BTN_INFO_X + BTN_INFO_W, BTN_INFO_Y + BTN_INFO_H, BLUE, DRAW_EMPTY, DOT_PIXEL_1X1);
+    GUI_DisString_EN(BTN_INFO_X + 10, BTN_INFO_Y + 8, "INFO", &Font16, LCD_BACKGROUND, BLUE);
+}
+
+void DrawInfoScreen() {
+    LCD_Clear(LCD_BACKGROUND);
+
+    GUI_DisString_EN(10, 10, "Information", &Font24, LCD_BACKGROUND, BLUE);
+    GUI_DrawLine(0, 40, 480, 40, BLUE, LINE_SOLID, DOT_PIXEL_2X2);
+
+    GUI_DisString_EN(10, 60, "Open Source Code", &Font20, LCD_BACKGROUND, BLACK);
+    GUI_DisString_EN(10, 90, "Copyright (c) 2026", &Font16, LCD_BACKGROUND, BLACK);
+    GUI_DisString_EN(10, 110, "EastWillowLearningLog", &Font16, LCD_BACKGROUND, BLACK);
+    GUI_DisString_EN(10, 140, "MIT License", &Font16, LCD_BACKGROUND, BLACK);
+
+    // Draw Back Button
+    GUI_DrawRectangle(BTN_BACK_X, BTN_BACK_Y, BTN_BACK_X + BTN_BACK_W, BTN_BACK_Y + BTN_BACK_H, BLUE, DRAW_EMPTY, DOT_PIXEL_1X1);
+    GUI_DisString_EN(BTN_BACK_X + 10, BTN_BACK_Y + 8, "BACK", &Font16, LCD_BACKGROUND, BLUE);
+}
+
 void App_Setup(SensorIntf* sen5x) {
   // 1. 初始化 LCD 底層系統 (包含 Serial)
   System_Init();
@@ -75,6 +118,7 @@ void App_Setup(SensorIntf* sen5x) {
   // 2. 初始化 LCD
   LCD_SCAN_DIR Lcd_ScanDir = SCAN_DIR_DFT;
   LCD_Init(Lcd_ScanDir, 100);
+  TP_Init(Lcd_ScanDir);
 
 #ifdef ARDUINO
   Serial.println("LCD Clear...");
@@ -82,11 +126,7 @@ void App_Setup(SensorIntf* sen5x) {
   printf("LCD Clear...\n");
 #endif
 
-  LCD_Clear(LCD_BACKGROUND);
-
-  // 顯示標題
-  GUI_DisString_EN(10, 10, "SEN55 Air Quality", &Font24, LCD_BACKGROUND, BLUE);
-  GUI_DrawLine(0, 40, 480, 40, BLUE, LINE_SOLID, DOT_PIXEL_2X2);
+  DrawMainScreen();
 
   // 3. 初始化 SEN55
 #ifdef ARDUINO
@@ -135,80 +175,118 @@ void App_Setup(SensorIntf* sen5x) {
   }
 }
 
+static unsigned long lastSensorUpdate = 0;
+
 void App_Loop(SensorIntf* sen5x) {
-  uint16_t error;
-  char errorMessage[256];
+    // --- Touch Handling ---
+    unsigned char touchState = TP_Scan(0);
+    uint16_t x = 0, y = 0;
 
-  // Delay handling
-#ifdef ARDUINO
-  delay(1000);
-#else
-  // For PC simulation, we might not want to block for a full second,
-  // or we do if we want real-time simulation.
-  // We can use a mocked delay or just skip.
-  // Driver_Delay_ms is defined in DEV_Config.
-  Driver_Delay_ms(1000);
-#endif
+    if (touchState & TP_PRESS_DOWN) {
+        TP_GetXY(&x, &y);
 
-  // 讀取測量值
-  float massConcentrationPm1p0;
-  float massConcentrationPm2p5;
-  float massConcentrationPm4p0;
-  float massConcentrationPm10p0;
-  float ambientHumidity;
-  float ambientTemperature;
-  float vocIndex;
-  float noxIndex;
-
-  error = sen5x->readMeasuredValues(
-    massConcentrationPm1p0, massConcentrationPm2p5, massConcentrationPm4p0,
-    massConcentrationPm10p0, ambientHumidity, ambientTemperature, vocIndex,
-    noxIndex);
-
-  if (error) {
-#ifdef ARDUINO
-    Serial.print("Read Error: ");
-#endif
-    sen5x->errorToString(error, errorMessage, 256);
-#ifdef ARDUINO
-    Serial.println(errorMessage);
-#else
-    printf("Read Error: %s\n", errorMessage);
-#endif
-    GUI_DisString_EN(10, 300, "Read Error...", &Font16, LCD_BACKGROUND, RED);
-  } else {
-    // 如果讀取成功，更新 LCD 顯示
-
-    // --- PM 數值 ---
-    // PM 1.0
-    displayValue(10, 60, "PM 1.0:", massConcentrationPm1p0, " ug/m3", BLACK);
-    // PM 2.5 (使用紅色強調)
-    displayValue(10, 90, "PM 2.5:", massConcentrationPm2p5, " ug/m3", RED);
-    // PM 4.0
-    displayValue(10, 120, "PM 4.0:", massConcentrationPm4p0, " ug/m3", BLACK);
-    // PM 10.0
-    displayValue(10, 150, "PM 10 :", massConcentrationPm10p0, " ug/m3", BLACK);
-
-    // --- 環境數值 ---
-    // 溫度
-    displayValue(10, 180, "Temp  :", ambientTemperature, " C", BLUE);
-    // 濕度
-    displayValue(10, 210, "Humid :", ambientHumidity, " %", BLUE);
-
-    // --- 氣體指數 ---
-    // VOC
-    // 處理 NaN 狀況 (感測器預熱時可能是 NaN)
-    if (isnan(vocIndex)) {
-       GUI_DisString_EN(10, 240, "VOC Idx:   n/a", &Font20, LCD_BACKGROUND, BLACK);
-    } else {
-       displayValue(10, 240, "VOC Idx:", vocIndex, "", MAGENTA);
+        // Debounce / State Transition
+        if (currentState == APP_STATE_MAIN) {
+            // Check Info Button
+            if (x >= BTN_INFO_X && x <= BTN_INFO_X + BTN_INFO_W &&
+                y >= BTN_INFO_Y && y <= BTN_INFO_Y + BTN_INFO_H) {
+                currentState = APP_STATE_INFO;
+                DrawInfoScreen();
+                Driver_Delay_ms(200); // Simple debounce
+            }
+        } else if (currentState == APP_STATE_INFO) {
+            // Check Back Button
+            if (x >= BTN_BACK_X && x <= BTN_BACK_X + BTN_BACK_W &&
+                y >= BTN_BACK_Y && y <= BTN_BACK_Y + BTN_BACK_H) {
+                currentState = APP_STATE_MAIN;
+                DrawMainScreen();
+                Driver_Delay_ms(200); // Simple debounce
+            }
+        }
     }
 
-    // NOx
-    if (isnan(noxIndex)) {
-       GUI_DisString_EN(10, 270, "NOx Idx:   n/a", &Font20, LCD_BACKGROUND, BLACK);
+    // --- Update Sensor Data (Only in MAIN State, Every 1000ms) ---
+    unsigned long currentMillis;
+    #ifdef ARDUINO
+    currentMillis = millis();
+    #else
+    // Mock millis or just increment logic
+    static unsigned long mockMillis = 0;
+    mockMillis += 50; // Simulate 50ms per loop
+    currentMillis = mockMillis;
+    // Add small delay to avoid CPU hogging on PC
+    Driver_Delay_ms(50);
+    #endif
+
+    if (currentState == APP_STATE_MAIN && (currentMillis - lastSensorUpdate >= 1000)) {
+          lastSensorUpdate = currentMillis;
+          uint16_t error;
+          char errorMessage[256];
+
+          // 讀取測量值
+          float massConcentrationPm1p0;
+          float massConcentrationPm2p5;
+          float massConcentrationPm4p0;
+          float massConcentrationPm10p0;
+          float ambientHumidity;
+          float ambientTemperature;
+          float vocIndex;
+          float noxIndex;
+
+          error = sen5x->readMeasuredValues(
+            massConcentrationPm1p0, massConcentrationPm2p5, massConcentrationPm4p0,
+            massConcentrationPm10p0, ambientHumidity, ambientTemperature, vocIndex,
+            noxIndex);
+
+          if (error) {
+        #ifdef ARDUINO
+            Serial.print("Read Error: ");
+        #endif
+            sen5x->errorToString(error, errorMessage, 256);
+        #ifdef ARDUINO
+            Serial.println(errorMessage);
+        #else
+            printf("Read Error: %s\n", errorMessage);
+        #endif
+            GUI_DisString_EN(10, 300, "Read Error...", &Font16, LCD_BACKGROUND, RED);
+          } else {
+            // 如果讀取成功，更新 LCD 顯示
+
+            // --- PM 數值 ---
+            // PM 1.0
+            displayValue(10, 60, "PM 1.0:", massConcentrationPm1p0, " ug/m3", BLACK);
+            // PM 2.5 (使用紅色強調)
+            displayValue(10, 90, "PM 2.5:", massConcentrationPm2p5, " ug/m3", RED);
+            // PM 4.0
+            displayValue(10, 120, "PM 4.0:", massConcentrationPm4p0, " ug/m3", BLACK);
+            // PM 10.0
+            displayValue(10, 150, "PM 10 :", massConcentrationPm10p0, " ug/m3", BLACK);
+
+            // --- 環境數值 ---
+            // 溫度
+            displayValue(10, 180, "Temp  :", ambientTemperature, " C", BLUE);
+            // 濕度
+            displayValue(10, 210, "Humid :", ambientHumidity, " %", BLUE);
+
+            // --- 氣體指數 ---
+            // VOC
+            // 處理 NaN 狀況 (感測器預熱時可能是 NaN)
+            if (isnan(vocIndex)) {
+               GUI_DisString_EN(10, 240, "VOC Idx:   n/a", &Font20, LCD_BACKGROUND, BLACK);
+            } else {
+               displayValue(10, 240, "VOC Idx:", vocIndex, "", MAGENTA);
+            }
+
+            // NOx
+            if (isnan(noxIndex)) {
+               GUI_DisString_EN(10, 270, "NOx Idx:   n/a", &Font20, LCD_BACKGROUND, BLACK);
+            } else {
+               displayValue(10, 270, "NOx Idx:", noxIndex, "", MAGENTA);
+            }
+          }
     } else {
-       displayValue(10, 270, "NOx Idx:", noxIndex, "", MAGENTA);
+        // In Info state, we just wait for touch events.
+        // Maybe sleep a bit to save CPU in emulation
+        Driver_Delay_ms(100);
     }
-  }
 }

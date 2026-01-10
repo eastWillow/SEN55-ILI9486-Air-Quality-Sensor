@@ -22,6 +22,7 @@ set(SOURCES
     src/Sensor/SensorMock.cpp
     src/Display/LCD_Driver_SDL.cpp
     src/Display/LCD_GUI.cpp
+    src/Display/LCD_Touch.cpp
     src/Display/DEV_Config.cpp
     src/Fonts/font8.c
     src/Fonts/font12.c

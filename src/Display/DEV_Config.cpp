@@ -24,6 +24,11 @@ uint8_t System_Init(void)
   pinMode(LCD_DC, OUTPUT);
   pinMode(LCD_BL,OUTPUT);
 
+  // Touch
+  pinMode(TP_CS, OUTPUT);
+  pinMode(TP_IRQ, INPUT);
+  pinMode(TP_BUSY, INPUT);
+
   //set Serial
   Serial.begin(115200);
 

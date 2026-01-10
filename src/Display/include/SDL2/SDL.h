@@ -10,15 +10,51 @@
 #define SDL_RENDERER_ACCELERATED 0
 #define SDL_PIXELFORMAT_RGB565 0
 #define SDL_TEXTUREACCESS_STREAMING 0
-#define SDL_QUIT 0
+#define SDL_QUIT 0x100
+
+// Mouse Events
+#define SDL_MOUSEMOTION 0x400
+#define SDL_MOUSEBUTTONDOWN 0x401
+#define SDL_MOUSEBUTTONUP 0x402
+
+#define SDL_BUTTON_LEFT 1
+#define SDL_BUTTON_LMASK 1
 
 typedef struct SDL_Window SDL_Window;
 typedef struct SDL_Renderer SDL_Renderer;
 typedef struct SDL_Texture SDL_Texture;
 typedef struct SDL_Surface SDL_Surface;
 
-typedef struct SDL_Event {
+// Mouse Button Event Structure
+typedef struct SDL_MouseButtonEvent {
     uint32_t type;
+    uint32_t timestamp;
+    uint32_t windowID;
+    uint32_t which;
+    uint8_t button;
+    uint8_t state;
+    uint8_t clicks;
+    int32_t x;
+    int32_t y;
+} SDL_MouseButtonEvent;
+
+// Mouse Motion Event Structure
+typedef struct SDL_MouseMotionEvent {
+    uint32_t type;
+    uint32_t timestamp;
+    uint32_t windowID;
+    uint32_t which;
+    uint32_t state;
+    int32_t x;
+    int32_t y;
+    int32_t xrel;
+    int32_t yrel;
+} SDL_MouseMotionEvent;
+
+typedef union SDL_Event {
+    uint32_t type;
+    SDL_MouseButtonEvent button;
+    SDL_MouseMotionEvent motion;
 } SDL_Event;
 
 extern "C" {

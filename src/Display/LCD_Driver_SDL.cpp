@@ -12,6 +12,11 @@ static SDL_Renderer* renderer = NULL;
 static SDL_Texture* texture = NULL;
 static uint16_t* frameBuffer = NULL; // 16-bit color buffer
 
+// Mouse State
+static int s_mouseX = 0;
+static int s_mouseY = 0;
+static bool s_mousePressed = false;
+
 LCD_DIS sLCD_DIS = {LCD_WIDTH, LCD_HEIGHT, SCAN_DIR_DFT, 0, 0};
 
 #define WINDOW_WIDTH  LCD_WIDTH
@@ -140,6 +145,18 @@ void LCD_SaveScreenshot(const char* filename) {
     SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormatFrom(frameBuffer, WINDOW_WIDTH, WINDOW_HEIGHT, 16, WINDOW_WIDTH * 2, SDL_PIXELFORMAT_RGB565);
     SDL_SaveBMP(surface, filename);
     SDL_FreeSurface(surface);
+}
+
+void SDL_SetMouseState(int x, int y, bool pressed) {
+    s_mouseX = x;
+    s_mouseY = y;
+    s_mousePressed = pressed;
+}
+
+void SDL_GetMouseState_Mock(int *x, int *y, bool *pressed) {
+    if (x) *x = s_mouseX;
+    if (y) *y = s_mouseY;
+    if (pressed) *pressed = s_mousePressed;
 }
 
 #endif

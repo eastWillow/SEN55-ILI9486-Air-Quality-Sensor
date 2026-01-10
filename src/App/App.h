@@ -3,9 +3,11 @@
 
 #include "../Sensor/SensorIntf.h"
 
-// Define color constants if not already defined globally or include LCD header
-// Since LCD_GUI.h defines these, we might need to include it or forward declare.
-// For the App interface, we just need the Setup and Loop.
+// Define App States
+enum AppState {
+    APP_STATE_MAIN,
+    APP_STATE_INFO
+};
 
 void App_Setup(SensorIntf* sensor);
 void App_Loop(SensorIntf* sensor);
