@@ -4,14 +4,38 @@
 #include "src/Sensor/SensorMock.h"
 #include "src/Display/LCD_Driver.h"
 #include "src/Display/LCD_Driver_SDL.h"
+
+#ifdef __EMSCRIPTEN__
+#include <SDL.h>
+#include <emscripten.h>
+#else
 #include <SDL2/SDL.h>
+#endif
+
+// Global sensor instance
+SensorMock mockSensor;
+
+// The main loop function for Emscripten
+void emscripten_main_loop() {
+    App_Loop(&mockSensor);
+    LCD_Update();
+
+    SDL_Event e;
+    while (SDL_PollEvent(&e)) {
+        if (e.type == SDL_QUIT) {
+            // For this simple case, we can just let the user close the tab.
+        }
+    }
+}
 
 int main(int argc, char* argv[]) {
-    SensorMock mockSensor;
-
     // Setup
     App_Setup(&mockSensor);
 
+#ifdef __EMSCRIPTEN__
+    // For the web, we set a persistent main loop
+    emscripten_set_main_loop(emscripten_main_loop, 0, 1);
+#else
     // Loop
     // For emulation, we might want to run for a few seconds or frames,
     // then take a screenshot and exit, or run interactively.
@@ -37,6 +61,7 @@ int main(int argc, char* argv[]) {
 
     // Cleanup
     LCD_Quit();
+#endif
 
     return 0;
 }
