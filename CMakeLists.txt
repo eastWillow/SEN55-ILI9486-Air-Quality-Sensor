@@ -4,6 +4,8 @@ project(DisplayEmulator)
 set(CMAKE_CXX_STANDARD 11)
 
 if(EMSCRIPTEN)
+    add_compile_options(-s USE_SDL=2)
+    add_link_options(-s USE_SDL=2)
     set(CMAKE_EXECUTABLE_SUFFIX ".html")
 else()
     # Check if SDL2 is found normally

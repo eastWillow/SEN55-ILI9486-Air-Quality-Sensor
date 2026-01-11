@@ -2,10 +2,12 @@
 #include "src/Sensor/SensorMock.h"
 #include "src/Display/LCD_Driver.h"
 #include "src/Display/LCD_Driver_SDL.h"
-#include <SDL2/SDL.h>
 
 #ifdef __EMSCRIPTEN__
+#include <SDL.h>
 #include <emscripten.h>
+#else
+#include <SDL2/SDL.h>
 #endif
 
 // Global sensor instance
