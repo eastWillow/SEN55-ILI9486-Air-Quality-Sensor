@@ -48,9 +48,6 @@
 #define TP_BUSY 6
 #define GET_TP_BUSY    digitalRead(TP_BUSY)
 
-#define SPI4W_Write_Byte(__DATA) SPI.transfer(__DATA)
-#define SPI4W_Read_Byte(__DATA) SPI.transfer(__DATA)
-
 #else
 // PC Mocks
 #include <stdint.h>
@@ -69,15 +66,6 @@
 #define TP_CS 4
 #define TP_CS_0
 #define TP_CS_1
-#define TP_IRQ 3
-#define GET_TP_IRQ 0  // 0 means pressed (usually active low), but check usage.
-                      // In TP_Scan: if (!GET_TP_IRQ) -> pressed.
-                      // So 0 = pressed.
-                      // But for PC we don't use this macro in our mock TP_Scan.
-                      // However, we might need it for compilation of shared code if any.
-
-#define TP_BUSY 6
-#define GET_TP_BUSY 0
 
 #endif
 

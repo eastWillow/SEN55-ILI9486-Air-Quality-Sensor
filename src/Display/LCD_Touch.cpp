@@ -176,7 +176,7 @@ static bool TP_Read_TwiceADC(POINT *pXCh_Adc, POINT  *pYCh_Adc )
                     1 : calibration
                     0 : relative position
 *******************************************************************************/
-static unsigned char TP_Scan(unsigned char chCoordType)
+unsigned char TP_Scan(unsigned char chCoordType)
 {
   //In X, Y coordinate measurement, IRQ is disabled and output is low
   if (!GET_TP_IRQ) {//Press the button to press
