@@ -73,12 +73,8 @@
 /*------------------------------------------------------------------------------------------------------*/
 uint8_t System_Init(void);
 void PWM_SetValue(uint16_t value);
-#ifdef ARDUINO
-// Defined macros above
-#else
 void SPI4W_Write_Byte(uint8_t DATA);
 uint8_t SPI4W_Read_Byte(uint8_t DATA);
-#endif
 
 void Driver_Delay_ms(unsigned long xms);
 void Driver_Delay_us(int xus);
