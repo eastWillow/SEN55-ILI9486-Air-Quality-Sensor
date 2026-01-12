@@ -26,4 +26,5 @@ int SDL_SaveBMP(SDL_Surface* surface, const char* file) {
     return 0;
 }
 void SDL_FreeSurface(SDL_Surface* surface) {}
+SDL_bool SDL_SetHint(const char* name, const char* value) { return SDL_TRUE; }
 }

@@ -15,6 +15,27 @@
 // Global sensor instance
 SensorMock mockSensor;
 
+// Shared input handling logic for both Emscripten and Native
+void HandleInput(const SDL_Event& e) {
+    if (e.type == SDL_MOUSEBUTTONDOWN) {
+        if (e.button.button == SDL_BUTTON_LEFT) {
+             SDL_SetMouseState(e.button.x, e.button.y, true);
+        }
+    } else if (e.type == SDL_MOUSEBUTTONUP) {
+        if (e.button.button == SDL_BUTTON_LEFT) {
+             SDL_SetMouseState(e.button.x, e.button.y, false);
+        }
+    } else if (e.type == SDL_MOUSEMOTION) {
+        // Update position. If dragging (button held), update as pressed.
+        // Otherwise, just update position (hover) with pressed=false.
+        if (e.motion.state & SDL_BUTTON_LMASK) {
+            SDL_SetMouseState(e.motion.x, e.motion.y, true);
+        } else {
+             SDL_SetMouseState(e.motion.x, e.motion.y, false);
+        }
+    }
+}
+
 // The main loop function for Emscripten
 void emscripten_main_loop() {
     App_Loop(&mockSensor);
@@ -24,11 +45,16 @@ void emscripten_main_loop() {
     while (SDL_PollEvent(&e)) {
         if (e.type == SDL_QUIT) {
             // For this simple case, we can just let the user close the tab.
+        } else {
+            HandleInput(e);
         }
     }
 }
 
 int main(int argc, char* argv[]) {
+    // Explicitly convert touch events to mouse events (standard SDL behavior, but enforced here)
+    SDL_SetHint(SDL_HINT_TOUCH_MOUSE_EVENTS, "1");
+
     // Setup
     App_Setup(&mockSensor);
 
@@ -53,30 +79,8 @@ int main(int argc, char* argv[]) {
             if (e.type == SDL_QUIT) {
                 LCD_Quit();
                 return 0;
-            } else if (e.type == SDL_MOUSEBUTTONDOWN) {
-                if (e.button.button == SDL_BUTTON_LEFT) {
-                     SDL_SetMouseState(e.button.x, e.button.y, true);
-                }
-            } else if (e.type == SDL_MOUSEBUTTONUP) {
-                if (e.button.button == SDL_BUTTON_LEFT) {
-                     SDL_SetMouseState(e.button.x, e.button.y, false);
-                }
-            } else if (e.type == SDL_MOUSEMOTION) {
-                // Optionally update position while moving, though touch usually implies "touching" at a point
-                // But for mouse simulation, we can just update position always, or only when dragging.
-                // For simplicity, let's update position if we are considering it "touching" or just always update pos
-                // but only set "pressed" on click.
-                // However, touch screens usually only report coordinates when touched.
-                // So we might only want to update coordinates when the button is held.
-                // Let's stick to updating state on clicks for now, but if we drag, we want updates.
-                if (e.motion.state & SDL_BUTTON_LMASK) {
-                    SDL_SetMouseState(e.motion.x, e.motion.y, true);
-                } else {
-                    // Update cursor position even if not pressed?
-                    // Touch screen: No touch -> no coordinates (or old ones).
-                    // We'll just leave old coordinates but pressed=false.
-                     SDL_SetMouseState(e.motion.x, e.motion.y, false);
-                }
+            } else {
+                HandleInput(e);
             }
         }
     }

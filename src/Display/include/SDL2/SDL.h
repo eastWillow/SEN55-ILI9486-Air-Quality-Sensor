@@ -20,6 +20,14 @@
 #define SDL_BUTTON_LEFT 1
 #define SDL_BUTTON_LMASK 1
 
+// Hints
+#define SDL_HINT_TOUCH_MOUSE_EVENTS "SDL_TOUCH_MOUSE_EVENTS"
+
+typedef enum {
+    SDL_FALSE = 0,
+    SDL_TRUE = 1
+} SDL_bool;
+
 typedef struct SDL_Window SDL_Window;
 typedef struct SDL_Renderer SDL_Renderer;
 typedef struct SDL_Texture SDL_Texture;
@@ -76,6 +84,7 @@ void SDL_Delay(uint32_t ms);
 SDL_Surface* SDL_CreateRGBSurfaceWithFormatFrom(void* pixels, int width, int height, int depth, int pitch, uint32_t format);
 int SDL_SaveBMP(SDL_Surface* surface, const char* file);
 void SDL_FreeSurface(SDL_Surface* surface);
+SDL_bool SDL_SetHint(const char* name, const char* value);
 }
 
 #endif
