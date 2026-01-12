@@ -40,6 +40,7 @@ set(SOURCES
 add_executable(DisplayEmulator ${SOURCES})
 
 if(EMSCRIPTEN)
+    set_target_properties(DisplayEmulator PROPERTIES OUTPUT_NAME "index")
     target_link_options(DisplayEmulator PUBLIC "-s USE_SDL=2")
 else()
     if(SDL2_FOUND)
