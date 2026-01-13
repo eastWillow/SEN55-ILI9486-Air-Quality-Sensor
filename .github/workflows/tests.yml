@@ -1,0 +1,31 @@
+name: Tests
+
+on:
+  push:
+    paths-ignore:
+      - 'README.md'
+      - 'LICENSE'
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libsdl2-dev xvfb
+
+    - name: Configure CMake
+      run: cmake -S . -B build -DBUILD_TESTING=ON
+
+    - name: Build
+      run: cmake --build build
+
+    - name: Run Tests
+      run: xvfb-run ./build/tests/UnitTests

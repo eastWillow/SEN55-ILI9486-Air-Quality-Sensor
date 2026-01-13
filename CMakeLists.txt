@@ -10,22 +10,11 @@ if(EMSCRIPTEN)
 else()
     # Check if SDL2 is found normally
     find_package(SDL2 QUIET)
-
-    if(SDL2_FOUND)
-        include_directories(${SDL2_INCLUDE_DIRS})
-    else()
-        message(STATUS "SDL2 not found, using local mock/include for compilation check")
-        include_directories(src/Display/include)
-    endif()
 endif()
 
-include_directories(src/Display src/Fonts src/Sensor src/App)
-
-# Source files
-set(SOURCES
-    main_pc.cpp
+# Define Core Sources
+set(CORE_SOURCES
     src/App/App.cpp
-    src/Sensor/SensorMock.cpp
     src/Display/LCD_Driver_SDL.cpp
     src/Display/LCD_GUI.cpp
     src/Display/LCD_Touch.cpp
@@ -37,19 +26,46 @@ set(SOURCES
     src/Fonts/font24.c
 )
 
-add_executable(DisplayEmulator ${SOURCES})
+add_library(CoreLib STATIC ${CORE_SOURCES})
+
+# Config Includes for CoreLib
+target_include_directories(CoreLib PUBLIC
+    src/Display
+    src/Fonts
+    src/Sensor
+    src/App
+)
+
+if(NOT EMSCRIPTEN)
+    if(SDL2_FOUND)
+        target_include_directories(CoreLib PUBLIC ${SDL2_INCLUDE_DIRS})
+        target_link_libraries(CoreLib PUBLIC ${SDL2_LIBRARIES})
+    else()
+        message(STATUS "SDL2 not found, using local mock/include for compilation check")
+        target_include_directories(CoreLib PUBLIC src/Display/include)
+
+        # Stub logic
+        add_library(SDL2Stub src/Display/include/SDL2/SDL_stub.cpp)
+        target_link_libraries(CoreLib PUBLIC SDL2Stub)
+    endif()
+endif()
+
+# Main PC Emulator
+set(EMULATOR_SOURCES
+    main_pc.cpp
+    src/Sensor/SensorMock.cpp
+)
+
+add_executable(DisplayEmulator ${EMULATOR_SOURCES})
+target_link_libraries(DisplayEmulator CoreLib)
 
 if(EMSCRIPTEN)
     set_target_properties(DisplayEmulator PROPERTIES OUTPUT_NAME "index")
     target_link_options(DisplayEmulator PUBLIC "-s USE_SDL=2")
-else()
-    if(SDL2_FOUND)
-        target_link_libraries(DisplayEmulator ${SDL2_LIBRARIES})
-    else()
-        # Mock linking if SDL is missing (compilation only, linking will fail if symbols missing)
-        # Actually, we need to stub the symbols if we want to link.
-        # Let's create a stub source file.
-        add_library(SDL2Stub src/Display/include/SDL2/SDL_stub.cpp)
-        target_link_libraries(DisplayEmulator SDL2Stub)
-    endif()
+endif()
+
+# Tests
+option(BUILD_TESTING "Build tests" ON)
+if(BUILD_TESTING AND NOT EMSCRIPTEN)
+    add_subdirectory(tests)
 endif()
