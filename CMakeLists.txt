@@ -3,6 +3,7 @@ project(DisplayEmulator)
 
 set(CMAKE_CXX_STANDARD 11)
 
+# --- Dependency Setup (SDL2) ---
 if(EMSCRIPTEN)
     add_compile_options(-s USE_SDL=2)
     add_link_options(-s USE_SDL=2)
@@ -19,11 +20,12 @@ else()
     endif()
 endif()
 
+# Include project directories
 include_directories(src/Display src/Fonts src/Sensor src/App)
 
-# Source files
-set(SOURCES
-    main_pc.cpp
+# --- CoreLib Definition ---
+# Shared sources between Emulator and Tests
+set(SOURCES_CORE
     src/App/App.cpp
     src/Sensor/SensorMock.cpp
     src/Display/LCD_Driver_SDL.cpp
@@ -37,19 +39,38 @@ set(SOURCES
     src/Fonts/font24.c
 )
 
-add_executable(DisplayEmulator ${SOURCES})
+add_library(CoreLib STATIC ${SOURCES_CORE})
+
+# Handle dependencies for CoreLib
+if(NOT EMSCRIPTEN)
+    if(SDL2_FOUND)
+        # If SDL2 is found, link it to CoreLib if possible, or just propagate usage
+        target_link_libraries(CoreLib PUBLIC ${SDL2_LIBRARIES})
+    else()
+        # Mock linking if SDL is missing
+        add_library(SDL2Stub src/Display/include/SDL2/SDL_stub.cpp)
+        target_link_libraries(CoreLib PUBLIC SDL2Stub)
+    endif()
+else()
+    # For Emscripten, flags are global or on target
+endif()
+
+# --- DisplayEmulator Executable ---
+set(SOURCES_EMULATOR
+    main_pc.cpp
+)
+
+add_executable(DisplayEmulator ${SOURCES_EMULATOR})
+target_link_libraries(DisplayEmulator CoreLib)
 
 if(EMSCRIPTEN)
     set_target_properties(DisplayEmulator PROPERTIES OUTPUT_NAME "index")
     target_link_options(DisplayEmulator PUBLIC "-s USE_SDL=2")
-else()
-    if(SDL2_FOUND)
-        target_link_libraries(DisplayEmulator ${SDL2_LIBRARIES})
-    else()
-        # Mock linking if SDL is missing (compilation only, linking will fail if symbols missing)
-        # Actually, we need to stub the symbols if we want to link.
-        # Let's create a stub source file.
-        add_library(SDL2Stub src/Display/include/SDL2/SDL_stub.cpp)
-        target_link_libraries(DisplayEmulator SDL2Stub)
-    endif()
+endif()
+
+# --- Testing ---
+# Only add tests if the directory exists (it should, based on our plan)
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/CMakeLists.txt")
+    enable_testing()
+    add_subdirectory(tests)
 endif()
