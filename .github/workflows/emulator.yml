@@ -19,7 +19,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y xvfb libsdl2-dev libsdl2-mixer-dev
+          sudo apt-get install -y xvfb libsdl2-dev libsdl2-mixer-dev libgtest-dev
 
       - name: Configure CMake
         run: |
@@ -32,13 +32,14 @@ jobs:
           cd build
           cmake --build .
 
-      - name: Run Emulator
+      - name: Run Emulator Integration Test
         run: |
           cd build
-          xvfb-run ./DisplayEmulator
+          xvfb-run ctest -R EmulatorIntegrationTest --output-on-failure
 
-      - name: Upload Screenshot
+      - name: Upload Screenshot (on failure)
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: emulator-screenshot
+          name: emulator-screenshot-failed
           path: build/screenshot.bmp

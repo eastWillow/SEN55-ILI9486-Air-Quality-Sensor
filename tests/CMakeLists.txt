@@ -8,19 +8,20 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/external/googletest ${CMAKE_BINARY_DIR}/goo
 # Locate GTest
 include(GoogleTest)
 
-# Define Test Executable
-add_executable(UnitTests
-    hello_test.cpp
+# Build the GTest executable
+add_executable(emulator_test emulator_test.cpp)
+
+# Link GTest and the CoreLib (assuming it's available from parent scope)
+target_link_libraries(emulator_test
+    GTest::gtest_main
+    CoreLib
 )
 
-# Link against CoreLib and GTest
-target_link_libraries(UnitTests
-    PRIVATE
-    CoreLib
-    gtest
-    gtest_main
-    gmock
-)
+# Register the test
+# Copy reference images to build dir so test can find them at tests/reference/...
+file(COPY reference DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/tests)
+
+add_test(NAME EmulatorIntegrationTest COMMAND emulator_test)
 
 # Discover tests
-gtest_discover_tests(UnitTests)
+gtest_discover_tests(emulator_test)
