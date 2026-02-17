@@ -18,7 +18,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y libsdl2-dev cmake
+        sudo apt-get install -y xvfb libsdl2-dev cmake
 
     - name: Configure CMake (Standalone Tests)
       run: cmake -B build_tests -S tests
@@ -28,4 +28,4 @@ jobs:
 
     - name: Run Tests
       working-directory: build_tests
-      run: ctest --output-on-failure
+      run: xvfb-run ctest --output-on-failure

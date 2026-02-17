@@ -35,6 +35,86 @@ Acknowledging AI Usage:
 
 ---
 
+## Testing Strategy
+
+This project uses a layered testing approach to validate different aspects of the system. Understanding the separation between test types is critical for maintaining test clarity and avoiding redundancy.
+
+### Test Pyramid
+
+```
+    △ Smoke Tests (Binary Integration)
+   △△ Integration Tests (Visual Regression - Future)  
+  △△△ Component Tests (CoreLib Validation)
+```
+
+### Test Layer Separation
+
+| Test Type | Workflow | Target | Purpose | xvfb-run Required? |
+|-----------|----------|--------|---------|-------------------|
+| **Smoke Tests** | `emulator.yml` | DisplayEmulator binary | "Can it run without crashing?" | ✅ Yes |
+| **Component Tests** | `tests.yml` | CoreLib library | "Do components work correctly?" | ✅ Yes |
+| **Integration Tests** | (Future) | Screenshot comparison | "Does it render correctly?" | ✅ Yes |
+| **Compile Checks** | `arduino.yml` | Arduino sketch | "Does it compile?" | ❌ No |
+
+### Why Both Smoke and Component Tests Need xvfb-run?
+
+**Mental Model**: `xvfb-run = SDL2 = GUI` 
+
+Both test types use SDL2, but at different abstraction layers:
+
+- **Smoke test** (`emulator.yml`): Runs the full DisplayEmulator binary → SDL2_Init() in main application
+- **Component test** (`tests.yml`): Links CoreLib → Tests call LCD_Driver_SDL functions → SDL2 functions
+
+Both require a display, so both need `xvfb-run` in headless CI environments.
+
+### Component Tests vs Smoke Tests
+
+**Component tests** (`tests/emulator_test.cpp`):
+- Link CoreLib library directly
+- Test individual components: `App_Setup()`, `SensorMock`, display functions
+- Enable white-box testing and granular debugging
+- Fast execution (~0.2s)
+
+**Smoke tests** (`emulator.yml`):
+- Execute the final DisplayEmulator binary
+- Validate full integration and SDL2 initialization
+- Black-box validation of overall system health
+- Slower execution (~5s)
+
+### Running Tests Locally
+
+**Component Tests** (links CoreLib):
+```bash
+# Build standalone tests
+cmake -S tests -B build_tests
+cmake --build build_tests
+
+# Run with xvfb-run (required for SDL2)
+xvfb-run ctest --test-dir build_tests --output-on-failure
+```
+
+**Smoke Test** (runs binary):
+```bash
+# Build main project
+mkdir -p build && cd build
+cmake ..
+cmake --build .
+
+# Run emulator in test mode with xvfb-run
+xvfb-run ./DisplayEmulator --test
+```
+
+### CI Workflows
+
+All test workflows are in `.github/workflows/`:
+
+- **`tests.yml`**: Component tests (CoreLib validation)
+- **`emulator.yml`**: Smoke tests (binary execution)
+- **`arduino.yml`**: Compilation checks (no xvfb-run needed)
+- **`wasm.yml`**: WASM build and deployment (no xvfb-run needed)
+
+---
+
 ## Emulator Testing
 
 The DisplayEmulator supports multiple testing modes to validate both execution and rendering correctness.

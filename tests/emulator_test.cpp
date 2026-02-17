@@ -1,50 +1,83 @@
-#include <cstdio>
-#include <cstdlib>
-#include <fstream>
+#include <cmath>
 #include <gtest/gtest.h>
-#include <string>
-#include <vector>
 
-// Helper to execute command and return exit code
-int RunCommand(const char *cmd) { return system(cmd); }
+// CoreLib component headers
+#include "App.h"
+#include "SensorMock.h"
 
-// Helper to read BMP file into buffer
-std::vector<char> ReadFile(const char *filename) {
-  std::ifstream file(filename, std::ios::binary);
-  std::vector<char> buffer((std::istreambuf_iterator<char>(file)),
-                           std::istreambuf_iterator<char>());
-  return buffer;
-}
+/**
+ * Component tests for CoreLib
+ *
+ * These tests validate CoreLib components directly by linking the library
+ * and calling functions, rather than spawning the DisplayEmulator binary.
+ *
+ * Test separation:
+ * - Smoke tests (emulator.yml): Validate DisplayEmulator binary integration
+ * - Component tests (here): Validate CoreLib component correctness
+ */
 
-class EmulatorTest : public ::testing::Test {
+class CoreLibTest : public ::testing::Test {
 protected:
   void SetUp() override {
-    // Clean up previous artifacts
-    remove("screenshot.bmp");
+    // Test setup if needed
   }
 
   void TearDown() override {
-    // Optional cleanup
-  }
-
-  std::string GetReferencePath(const std::string &filename) {
-#ifdef TEST_RESOURCE_DIR
-    return std::string(TEST_RESOURCE_DIR) + "/" + filename;
-#else
-    return "tests/reference/" + filename;
-#endif
+    // Test cleanup if needed
   }
 };
 
-TEST_F(EmulatorTest, RunsInTestModeAndProducesOutput) {
-  // Run emulator in test mode
-  int result = RunCommand("../DisplayEmulator --test");
-  EXPECT_EQ(result, 0)
-      << "Emulator failed to execute or returned non-zero exit code";
+/**
+ * Test: SensorMock initialization
+ * Validates that the mock sensor can be initialized without errors.
+ */
+TEST_F(CoreLibTest, SensorMockInitializes) {
+  SensorMock sensor;
+  uint16_t result = sensor.begin();
 
-  // Verify screenshot exists
-  std::ifstream screenshot("screenshot.bmp");
-  EXPECT_TRUE(screenshot.good()) << "screenshot.bmp was not created";
+  // begin() should return 0 on success (standard error code convention)
+  EXPECT_EQ(result, 0) << "SensorMock initialization failed";
+}
+
+/**
+ * Test: SensorMock provides valid data
+ * Validates that mock sensor returns non-NaN values for all readings.
+ */
+TEST_F(CoreLibTest, SensorMockProvidesValidData) {
+  SensorMock sensor;
+  sensor.begin();
+  sensor.startMeasurement();
+
+  float pm1p0, pm2p5, pm4p0, pm10p0, humidity, temperature, vocIndex, noxIndex;
+  uint16_t result = sensor.readMeasuredValues(
+      pm1p0, pm2p5, pm4p0, pm10p0, humidity, temperature, vocIndex, noxIndex);
+
+  EXPECT_EQ(result, 0) << "Read measurement failed";
+
+  // Verify all values are valid (not NaN)
+  // Use C-style isnan for portability
+  EXPECT_FALSE(isnan(temperature)) << "Temperature is NaN";
+  EXPECT_FALSE(isnan(humidity)) << "Humidity is NaN";
+  EXPECT_FALSE(isnan(pm2p5)) << "PM2.5 is NaN";
+
+  // Verify reasonable ranges for mock data
+  EXPECT_GE(temperature, -40.0f) << "Temperature too low";
+  EXPECT_LE(temperature, 85.0f) << "Temperature too high";
+  EXPECT_GE(humidity, 0.0f) << "Humidity too low";
+  EXPECT_LE(humidity, 100.0f) << "Humidity too high";
+}
+
+/**
+ * Test: App_Setup executes without crash
+ * Validates that app initialization completes successfully.
+ */
+TEST_F(CoreLibTest, AppSetupExecutes) {
+  SensorMock sensor;
+  sensor.begin();
+
+  // App_Setup should not crash when called with valid sensor
+  EXPECT_NO_THROW({ App_Setup(&sensor); })
+      << "App_Setup threw exception or crashed";
 }
 
 int main(int argc, char **argv) {

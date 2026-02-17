@@ -12,9 +12,49 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
         add_subdirectory(${PROJECT_ROOT}/external/googletest ${CMAKE_BINARY_DIR}/googletest)
     endif()
     
-    # We rely on DisplayEmulator being built. In a true standalone unit test of logic,
-    # we would link libraries. Here we are integration testing the binary.
-    # For now, let's assume the user builds the main project first or we address this later.
+    # Build CoreLib in standalone mode
+    # We need to build CoreLib to link against it in tests
+    if(NOT TARGET CoreLib)
+        # Find SDL2 for CoreLib
+        find_package(SDL2 QUIET)
+        
+        # Define CoreLib sources (from parent CMakeLists.txt)
+        set(LIB_SOURCES
+            ${PROJECT_ROOT}/src/App/App.cpp
+            ${PROJECT_ROOT}/src/Sensor/SensorMock.cpp
+            ${PROJECT_ROOT}/src/Display/LCD_Driver_SDL.cpp
+            ${PROJECT_ROOT}/src/Display/LCD_GUI.cpp
+            ${PROJECT_ROOT}/src/Display/LCD_Touch.cpp
+            ${PROJECT_ROOT}/src/Display/DEV_Config.cpp
+            ${PROJECT_ROOT}/src/Fonts/font8.c
+            ${PROJECT_ROOT}/src/Fonts/font12.c
+            ${PROJECT_ROOT}/src/Fonts/font16.c
+            ${PROJECT_ROOT}/src/Fonts/font20.c
+            ${PROJECT_ROOT}/src/Fonts/font24.c
+        )
+        
+        # Create the static library
+        add_library(CoreLib STATIC ${LIB_SOURCES})
+        
+        # Configure include directories
+        target_include_directories(CoreLib PUBLIC
+            ${PROJECT_ROOT}/src/Display
+            ${PROJECT_ROOT}/src/Fonts
+            ${PROJECT_ROOT}/src/Sensor
+            ${PROJECT_ROOT}/src/App
+        )
+        
+        # Link SDL2
+        if(SDL2_FOUND)
+            target_include_directories(CoreLib PUBLIC ${SDL2_INCLUDE_DIRS})
+            target_link_libraries(CoreLib PUBLIC ${SDL2_LIBRARIES})
+        else()
+            target_include_directories(CoreLib PUBLIC ${PROJECT_ROOT}/src/Display/include)
+            # Create stub library if SDL2 is missing
+            add_library(SDL2Stub ${PROJECT_ROOT}/src/Display/include/SDL2/SDL_stub.cpp)
+            target_link_libraries(CoreLib PUBLIC SDL2Stub)
+        endif()
+    endif()
 endif()
 
 # Enable testing
@@ -37,9 +77,10 @@ target_compile_definitions(emulator_test PRIVATE
     TEST_RESOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/reference"
 )
 
-# Link GTest
+# Link GTest and CoreLib
 target_link_libraries(emulator_test
     GTest::gtest_main
+    CoreLib
 )
 
 # Register the test
