@@ -1,9 +1,11 @@
 #ifndef ARDUINO
 
 #include "src/App/App.h"
+#include "src/Display/DEV_Config.h"
 #include "src/Display/LCD_Driver.h"
 #include "src/Display/LCD_Driver_SDL.h"
 #include "src/Sensor/SensorMock.h"
+#include <cstdlib>
 
 #ifdef __EMSCRIPTEN__
 #include <SDL.h>
@@ -57,14 +59,7 @@ int main(int argc, char *argv[]) {
   // enforced here)
   SDL_SetHint(SDL_HINT_TOUCH_MOUSE_EVENTS, "1");
 
-  // Setup
-  App_Setup(&mockSensor);
-
-#ifdef __EMSCRIPTEN__
-  // For the web, we set a persistent main loop
-  emscripten_set_main_loop(emscripten_main_loop, 0, 1);
-#else
-  // Parse arguments
+  // Parse arguments first to configure system
   bool testMode = false;
   for (int i = 1; i < argc; ++i) {
     if (std::string(argv[i]) == "--test") {
@@ -72,6 +67,18 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  if (testMode) {
+    srand(1);                 // Seed RNG for deterministic behavior
+    System_SetFastMode(true); // Disable delays
+  }
+
+  // Setup
+  App_Setup(&mockSensor);
+
+#ifdef __EMSCRIPTEN__
+  // For the web, we set a persistent main loop
+  emscripten_set_main_loop(emscripten_main_loop, 0, 1);
+#else
   // Loop
   // Default: Infinite loop for interactive user session
   // Test Mode: Run 25 loops (1.25s) then save screenshot and exit

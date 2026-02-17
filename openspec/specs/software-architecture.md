@@ -64,7 +64,7 @@ The project employs a multi-tier testing approach to ensure correctness across d
 ```
                       ┌────────────────────────┐
                       │  Integration Tests     │ ← Visual Regression
-                      │  (Planned)             │   Multi-checkpoint
+                      │  (integration-test.yml)│   Multi-checkpoint
                       ├────────────────────────┤   GTest-controlled
                       │  Emulator Smoke Test   │ ← Execution Validation
                       │  (emulator.yml)        │   Crash detection
@@ -91,13 +91,13 @@ The project employs a multi-tier testing approach to ensure correctness across d
 - **CI Workflow**: `.github/workflows/emulator.yml`
 - **Spec**: `openspec/specs/emulator-split/spec.md`
 
-#### 3. Display Integration Tests (Planned)
+#### 3. Display Integration Tests
 - **Purpose**: Visual regression testing via screenshot comparison
 - **Scope**: UI rendering correctness, graphical output validation
 - **Validation**: Pixel-level comparison against reference images
 - **Control**: GTest/GMock for checkpoint-based execution
 - **Speed**: Slower (~30+ seconds)
-- **CI Workflow**: `.github/workflows/integration-test.yml` *(future)*
+- **CI Workflow**: `.github/workflows/integration-test.yml`
 - **Spec**: `openspec/specs/display-integration-test/spec.md`
 
 #### 4. Platform Verification

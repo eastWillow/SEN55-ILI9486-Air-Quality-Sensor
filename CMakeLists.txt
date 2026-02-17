@@ -19,6 +19,7 @@ endif()
 # Define source files for the library (everything except main_pc.cpp)
 set(LIB_SOURCES
     src/App/App.cpp
+    src/App/EmulatorEngine.cpp
     src/Sensor/SensorMock.cpp
     src/Display/LCD_Driver_SDL.cpp
     src/Display/LCD_GUI.cpp

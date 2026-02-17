@@ -3,6 +3,7 @@
 [![Arduino CI](https://github.com/eastwillowlearninglog/SEN55-ILI9486-Air-Quality-Sensor/actions/workflows/arduino.yml/badge.svg)](https://github.com/eastwillowlearninglog/SEN55-ILI9486-Air-Quality-Sensor/actions/workflows/arduino.yml)
 [![Unit Tests](https://github.com/eastwillowlearninglog/SEN55-ILI9486-Air-Quality-Sensor/actions/workflows/tests.yml/badge.svg)](https://github.com/eastwillowlearninglog/SEN55-ILI9486-Air-Quality-Sensor/actions/workflows/tests.yml)
 [![Emulator CI](https://github.com/eastwillowlearninglog/SEN55-ILI9486-Air-Quality-Sensor/actions/workflows/emulator.yml/badge.svg)](https://github.com/eastwillowlearninglog/SEN55-ILI9486-Air-Quality-Sensor/actions/workflows/emulator.yml)
+[![Integration Tests](https://github.com/eastwillowlearninglog/SEN55-ILI9486-Air-Quality-Sensor/actions/workflows/integration-test.yml/badge.svg)](https://github.com/eastwillowlearninglog/SEN55-ILI9486-Air-Quality-Sensor/actions/workflows/integration-test.yml)
 [![WASM Build](https://github.com/eastwillowlearninglog/SEN55-ILI9486-Air-Quality-Sensor/actions/workflows/wasm.yml/badge.svg)](https://github.com/eastwillowlearninglog/SEN55-ILI9486-Air-Quality-Sensor/actions/workflows/wasm.yml)
 
 Local Run Command :
@@ -53,7 +54,7 @@ This project uses a layered testing approach to validate different aspects of th
 |-----------|----------|--------|---------|-------------------|
 | **Smoke Tests** | `emulator.yml` | DisplayEmulator binary | "Can it run without crashing?" | ✅ Yes |
 | **Component Tests** | `tests.yml` | CoreLib library | "Do components work correctly?" | ✅ Yes |
-| **Integration Tests** | (Future) | Screenshot comparison | "Does it render correctly?" | ✅ Yes |
+| **Integration Tests** | `integration-test.yml` | Screenshot comparison | "Does it render correctly?" | ✅ Yes |
 | **Compile Checks** | `arduino.yml` | Arduino sketch | "Does it compile?" | ❌ No |
 
 ### Why Both Smoke and Component Tests Need xvfb-run?
@@ -110,6 +111,7 @@ All test workflows are in `.github/workflows/`:
 
 - **`tests.yml`**: Component tests (CoreLib validation)
 - **`emulator.yml`**: Smoke tests (binary execution)
+- **`integration-test.yml`**: Integration tests (visual regression)
 - **`arduino.yml`**: Compilation checks (no xvfb-run needed)
 - **`wasm.yml`**: WASM build and deployment (no xvfb-run needed)
 
@@ -147,16 +149,25 @@ Run the emulator with the `--test` flag for automated execution validation.
 
 ---
 
-### 3. Integration Testing (Planned)
+### 3. Integration Testing (Visual Regression)
 Visual regression testing via GTest-controlled checkpoint execution.
 
-**Workflow** (future `integration-test.yml`):
-- Programmatic control via GTest/GMock
-- Multi-checkpoint screenshot capture
+**Workflow** (`integration-test.yml`):
+- Programmatic control via `EmulatorEngine` and GTest
+- Multi-checkpoint screenshot capture (Startup and Final)
 - Pixel-level comparison against reference images (ImageMagick)
 - Artifact upload on regression detection
 
 **Purpose**: Ensure UI renders correctly by detecting visual regressions through automated screenshot comparison.
+
+**Run Locally**:
+```bash
+# Build
+cd build && cmake .. && cmake --build . --target display_integration_test
+
+# Run checks
+xvfb-run -a ./tests/display_integration_test
+```
 
 **Documentation**: See `openspec/specs/display-integration-test/spec.md` for detailed requirements.
 

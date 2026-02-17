@@ -16,20 +16,19 @@
   note:
     Initialize the communication method
 ********************************************************************************/
-uint8_t System_Init(void)
-{
-  //set pin
+uint8_t System_Init(void) {
+  // set pin
   pinMode(LCD_CS, OUTPUT);
   pinMode(LCD_RST, OUTPUT);
   pinMode(LCD_DC, OUTPUT);
-  pinMode(LCD_BL,OUTPUT);
+  pinMode(LCD_BL, OUTPUT);
 
   // Touch
   pinMode(TP_CS, OUTPUT);
   pinMode(TP_IRQ, INPUT);
   pinMode(TP_BUSY, INPUT);
 
-  //set Serial
+  // set Serial
   Serial.begin(115200);
 
   SPI.setDataMode(SPI_MODE0);
@@ -40,10 +39,7 @@ uint8_t System_Init(void)
   return 0;
 }
 
-void PWM_SetValue(uint16_t value)
-{
-    analogWrite(LCD_BL, value);
-}
+void PWM_SetValue(uint16_t value) { analogWrite(LCD_BL, value); }
 
 /********************************************************************************
   function:    Hardware interface
@@ -53,14 +49,8 @@ void PWM_SetValue(uint16_t value)
     I2C_Write_Byte(value, cmd):
         hardware I2C
 ********************************************************************************/
-void SPI4W_Write_Byte(uint8_t DATA)
-{
-  SPI.transfer(DATA);
-}
-uint8_t SPI4W_Read_Byte(uint8_t DATA)
-{
-  return SPI.transfer(DATA);
-}
+void SPI4W_Write_Byte(uint8_t DATA) { SPI.transfer(DATA); }
+uint8_t SPI4W_Read_Byte(uint8_t DATA) { return SPI.transfer(DATA); }
 
 /********************************************************************************
   function:    Delay function
@@ -68,48 +58,50 @@ uint8_t SPI4W_Read_Byte(uint8_t DATA)
     Driver_Delay_ms(xms) : Delay x ms
     Driver_Delay_us(xus) : Delay x us
 ********************************************************************************/
-void Driver_Delay_ms(unsigned long xms)
-{
-  delay(xms);
-}
+void Driver_Delay_ms(unsigned long xms) { delay(xms); }
 
-void Driver_Delay_us(int xus)
-{
-  for (int j = xus; j > 0; j--);
+void Driver_Delay_us(int xus) {
+  for (int j = xus; j > 0; j--)
+    ;
 }
 
 #else // PC implementation
-
+#include <SDL2/SDL.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <SDL2/SDL.h>
+
+static bool s_fastMode = false;
+
+void System_SetFastMode(bool fast) { s_fastMode = fast; }
 
 uint8_t System_Init(void) {
-    // Already handled in LCD_Init for SDL, or we can do console init here
-    return 0;
+  // Already handled in LCD_Init for SDL, or we can do console init here
+  return 0;
 }
 
 void PWM_SetValue(uint16_t value) {
-    // PC brightness control - no-op or adjust gamma?
+  // PC brightness control - no-op or adjust gamma?
 }
 
 void SPI4W_Write_Byte(uint8_t DATA) {
-    // No-op
+  // No-op
 }
 
-uint8_t SPI4W_Read_Byte(uint8_t DATA) {
-    return 0;
-}
+uint8_t SPI4W_Read_Byte(uint8_t DATA) { return 0; }
 
 void Driver_Delay_ms(unsigned long xms) {
-    SDL_Delay(xms);
+  if (s_fastMode)
+    return;
+  SDL_Delay(xms);
 }
 
 void Driver_Delay_us(int xus) {
-    // Approximate us delay or just no-op as it's usually for hardware timing
-    // 1ms is minimum for SDL_Delay, so we might skip or busy wait
-    // For logic emulation, it's rarely needed.
-    SDL_Delay(1);
+  if (s_fastMode)
+    return;
+  // Approximate us delay or just no-op as it's usually for hardware timing
+  // 1ms is minimum for SDL_Delay, so we might skip or busy wait
+  // For logic emulation, it's rarely needed.
+  SDL_Delay(1);
 }
 
 #endif

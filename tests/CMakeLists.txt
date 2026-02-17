@@ -21,6 +21,7 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
         # Define CoreLib sources (from parent CMakeLists.txt)
         set(LIB_SOURCES
             ${PROJECT_ROOT}/src/App/App.cpp
+            ${PROJECT_ROOT}/src/App/EmulatorEngine.cpp
             ${PROJECT_ROOT}/src/Sensor/SensorMock.cpp
             ${PROJECT_ROOT}/src/Display/LCD_Driver_SDL.cpp
             ${PROJECT_ROOT}/src/Display/LCD_GUI.cpp
@@ -70,7 +71,7 @@ endif()
 # Locate GTest
 include(GoogleTest)
 
-# Build the GTest executable
+# Build the Unit Test executable
 add_executable(emulator_test emulator_test.cpp)
 
 target_compile_definitions(emulator_test PRIVATE
@@ -83,8 +84,22 @@ target_link_libraries(emulator_test
     CoreLib
 )
 
-# Register the test
-add_test(NAME EmulatorIntegrationTest COMMAND emulator_test)
-
-# Discover tests
+# Register the unit test
+add_test(NAME EmulatorUnitTest COMMAND emulator_test)
 gtest_discover_tests(emulator_test)
+
+# Build the Integration Test executable
+add_executable(display_integration_test integration/display_integration_test.cpp)
+
+target_link_libraries(display_integration_test
+    GTest::gtest_main
+    CoreLib
+)
+
+# Pass the reference directory location to the integration test
+target_compile_definitions(display_integration_test PRIVATE
+    TEST_RESOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/integration/reference_screenshots"
+)
+
+# Register the integration test
+gtest_discover_tests(display_integration_test)

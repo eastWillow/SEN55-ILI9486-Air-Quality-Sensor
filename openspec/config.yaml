@@ -11,10 +11,7 @@ schema: spec-driven
 
 # Per-artifact rules (optional)
 # Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always include a "Non-goals" section
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
+rules:
+  tasks:
+    - Always include a final verification task: "Run `arduino-cli compile --fqbn arduino:avr:uno SEN55-ILI9486-Air-Quality-Sensor.ino` to ensure embedded compatibility"
+    - Always include a final verification task: "Clear all CMake build artifacts (`rm -rf build`), rebuild from scratch, and run all tests (`ctest`) to ensure clean state correctness"
