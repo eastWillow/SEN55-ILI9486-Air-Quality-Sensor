@@ -21,9 +21,9 @@
 ## 4. Verify Test Execution
 
 - [x] 4.1 Build and run tests locally with xvfb-run
-- [ ] 4.2 Verify emulator.yml smoke test still passes (no changes to emulator workflow) *[Requires CI]*
-- [ ] 4.3 Verify tests.yml component tests pass in CI *[Requires git push]*
-- [ ] 4.4 Confirm both test workflows execute without duplication *[Requires CI]*
+- [x] 4.2 Verify emulator.yml smoke test still passes (no changes to emulator workflow) *[Requires CI]*
+- [x] 4.3 Verify tests.yml component tests pass in CI *[Requires git push]*
+- [x] 4.4 Confirm both test workflows execute without duplication *[Requires CI]*
 
 ## 5. Update Documentation
 
