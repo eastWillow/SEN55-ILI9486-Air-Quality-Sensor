@@ -13,3 +13,4 @@ cmake_install.cmake
 Makefile
 .cache/
 compile_commands.json
+build_tests
