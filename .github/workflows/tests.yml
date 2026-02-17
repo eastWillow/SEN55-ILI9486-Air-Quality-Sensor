@@ -9,6 +9,9 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      pull-requests: write
 
     steps:
     - uses: actions/checkout@v3
@@ -28,4 +31,10 @@ jobs:
 
     - name: Run Tests
       working-directory: build_tests
-      run: xvfb-run ctest --output-on-failure
+      run: xvfb-run ctest --output-on-failure --output-junit testReport.xml
+
+    - name: Test Report
+      uses: EnricoMi/publish-unit-test-result-action/linux@v2
+      if: runner.os == 'Linux'
+      with:
+        files: build_tests/**.xml
