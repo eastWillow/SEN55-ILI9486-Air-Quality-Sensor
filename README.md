@@ -5,6 +5,23 @@
 [![Emulator CI](https://github.com/eastwillowlearninglog/SEN55-ILI9486-Air-Quality-Sensor/actions/workflows/emulator.yml/badge.svg)](https://github.com/eastwillowlearninglog/SEN55-ILI9486-Air-Quality-Sensor/actions/workflows/emulator.yml)
 [![WASM Build](https://github.com/eastwillowlearninglog/SEN55-ILI9486-Air-Quality-Sensor/actions/workflows/wasm.yml/badge.svg)](https://github.com/eastwillowlearninglog/SEN55-ILI9486-Air-Quality-Sensor/actions/workflows/wasm.yml)
 
+Local Run Command :
+
+```bash
+mkdir build
+cd build
+cmake ..
+cmake --build .
+./DisplayEmulator
+```
+
+Local Run Test Command :
+
+```bash
+gh extension install https://github.com/nektos/gh-act
+gh act push
+```
+
 Web mockup Display:
 https://eastwillowlearninglog.github.io/SEN55-ILI9486-Air-Quality-Sensor/
 
