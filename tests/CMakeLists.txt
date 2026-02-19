@@ -98,3 +98,23 @@ target_compile_definitions(display_integration_test PRIVATE
 
 # Register the integration test
 gtest_discover_tests(display_integration_test)
+
+# Build the Chart Unit Test executable
+add_executable(chart_test unit/chart_test.cpp)
+
+target_link_libraries(chart_test
+    GTest::gtest_main
+    CoreLib
+)
+
+gtest_discover_tests(chart_test)
+
+# Build the Chart Integration Test executable
+add_executable(chart_integration_test integration/chart_integration_test.cpp)
+
+target_link_libraries(chart_integration_test
+    GTest::gtest_main
+    CoreLib
+)
+
+gtest_discover_tests(chart_integration_test)

@@ -13,20 +13,84 @@
 #include <string>
 using namespace std;
 // Define String class for PC if needed, or use std::string and helper
-// But the original code uses Arduino String.
-// Let's implement a minimal String helper or use std::string and adapt.
 #define String std::to_string
-#endif
-
-// Helper for PC compatibility with Arduino String
-#ifndef ARDUINO
-// A simple adapter if needed, or just change logic to use snprintf
 #endif
 
 // Application State
 static AppState currentState = APP_STATE_MAIN;
 
 AppState App_GetState() { return currentState; }
+
+// Sensor Data
+static SensorValues currentSensorValues = {0};
+
+const SensorValues* App_GetSensorValues() {
+  return &currentSensorValues;
+}
+
+void App_UpdateSensor(SensorIntf *sen5x) {
+    uint16_t error;
+    char errorMessage[256];
+
+    error = sen5x->readMeasuredValues(
+        currentSensorValues.massConcentrationPm1p0,
+        currentSensorValues.massConcentrationPm2p5,
+        currentSensorValues.massConcentrationPm4p0,
+        currentSensorValues.massConcentrationPm10p0,
+        currentSensorValues.ambientHumidity,
+        currentSensorValues.ambientTemperature,
+        currentSensorValues.vocIndex,
+        currentSensorValues.noxIndex);
+
+    if (error) {
+#ifdef ARDUINO
+      Serial.print("Read Error: ");
+#endif
+      sen5x->errorToString(error, errorMessage, 256);
+#ifdef ARDUINO
+      Serial.println(errorMessage);
+#else
+      printf("Read Error: %s\n", errorMessage);
+#endif
+      currentSensorValues.valid = false;
+    } else {
+      currentSensorValues.valid = true;
+    }
+}
+
+// Chart Data
+static float chartData[CHART_MAX_POINTS];
+static int chartDataCount = 0;
+static unsigned long lastChartUpdate = 0;
+
+void App_AddChartData(float value) {
+  if (chartDataCount < CHART_MAX_POINTS) {
+    chartData[chartDataCount++] = value;
+  } else {
+    // Shift left
+    for (int i = 0; i < CHART_MAX_POINTS - 1; i++) {
+      chartData[i] = chartData[i + 1];
+    }
+    chartData[CHART_MAX_POINTS - 1] = value;
+  }
+}
+
+const float* App_GetChartData() {
+  return chartData;
+}
+
+int App_GetChartCount() {
+  return chartDataCount;
+}
+
+void App_ResetChartData() {
+  chartDataCount = 0;
+  lastChartUpdate = 0;
+}
+
+void App_ResetState() {
+  currentState = APP_STATE_MAIN;
+}
 
 // 用於顯示數值的緩衝區
 static char buf[30];
@@ -79,6 +143,12 @@ void DrawMainScreen() {
                     BTN_INFO_Y + BTN_INFO_H, BLUE, DRAW_EMPTY, DOT_PIXEL_1X1);
   GUI_DisString_EN(BTN_INFO_X + 10, BTN_INFO_Y + 8, "INFO", &Font16,
                    LCD_BACKGROUND, BLUE);
+
+  // Draw Chart Button
+  GUI_DrawRectangle(BTN_CHART_X, BTN_CHART_Y, BTN_CHART_X + BTN_CHART_W,
+                    BTN_CHART_Y + BTN_CHART_H, BLUE, DRAW_EMPTY, DOT_PIXEL_1X1);
+  GUI_DisString_EN(BTN_CHART_X + 10, BTN_CHART_Y + 8, "CHART", &Font16,
+                   LCD_BACKGROUND, BLUE);
 }
 
 void DrawInfoScreen() {
@@ -99,6 +169,78 @@ void DrawInfoScreen() {
                     BTN_BACK_Y + BTN_BACK_H, BLUE, DRAW_EMPTY, DOT_PIXEL_1X1);
   GUI_DisString_EN(BTN_BACK_X + 10, BTN_BACK_Y + 8, "BACK", &Font16,
                    LCD_BACKGROUND, BLUE);
+}
+
+void DrawChartScreen() {
+  LCD_Clear(LCD_BACKGROUND);
+  GUI_DisString_EN(10, 10, "PM2.5 Trading Chart", &Font24, LCD_BACKGROUND, BLUE);
+  GUI_DrawLine(0, 40, 480, 40, BLUE, LINE_SOLID, DOT_PIXEL_2X2);
+
+  // Draw Back Button
+  GUI_DrawRectangle(BTN_BACK_X, BTN_BACK_Y, BTN_BACK_X + BTN_BACK_W,
+                    BTN_BACK_Y + BTN_BACK_H, BLUE, DRAW_EMPTY, DOT_PIXEL_1X1);
+  GUI_DisString_EN(BTN_BACK_X + 10, BTN_BACK_Y + 8, "BACK", &Font16,
+                   LCD_BACKGROUND, BLUE);
+
+  // Draw Chart Frame
+  GUI_DrawRectangle(10, 50, 470, 270, BLACK, DRAW_EMPTY, DOT_PIXEL_1X1);
+}
+
+void DrawChart() {
+  // Define chart area
+  const int xStart = 12;
+  const int xEnd = 468;
+  const int yStart = 52;
+  const int yEnd = 268;
+  const int width = xEnd - xStart;
+  const int height = yEnd - yStart;
+
+  // Clear chart area
+  GUI_DrawRectangle(xStart, yStart, xEnd, yEnd, LCD_BACKGROUND, DRAW_FULL, DOT_PIXEL_DFT);
+
+  if (chartDataCount < 2) return;
+
+  // Find min and max
+  float minVal = chartData[0];
+  float maxVal = chartData[0];
+  for (int i = 1; i < chartDataCount; i++) {
+    if (chartData[i] < minVal) minVal = chartData[i];
+    if (chartData[i] > maxVal) maxVal = chartData[i];
+  }
+
+  // Add some padding to min/max
+  if (maxVal == minVal) {
+    maxVal += 10;
+    minVal -= 10;
+  } else {
+    float range = maxVal - minVal;
+    maxVal += range * 0.1f;
+    minVal -= range * 0.1f;
+  }
+  if (minVal < 0) minVal = 0;
+
+  // Draw lines
+  // Spacing based on total capacity (scrolling window)
+  float xStep = (float)width / (CHART_MAX_POINTS - 1);
+
+  for (int i = 0; i < chartDataCount - 1; i++) {
+    int x1 = xStart + (int)(i * xStep);
+    int x2 = xStart + (int)((i + 1) * xStep);
+
+    // Map Y values to screen coordinates (inverted Y axis)
+    int y1 = yEnd - (int)((chartData[i] - minVal) / (maxVal - minVal) * height);
+    int y2 = yEnd - (int)((chartData[i + 1] - minVal) / (maxVal - minVal) * height);
+
+    GUI_DrawLine(x1, y1, x2, y2, BLACK, LINE_SOLID, DOT_PIXEL_1X1);
+  }
+
+  // Display Min/Max labels
+  char buf[32];
+  snprintf(buf, sizeof(buf), "%.1f", maxVal);
+  GUI_DisString_EN(xEnd - 60, yStart + 5, buf, &Font16, LCD_BACKGROUND, RED);
+
+  snprintf(buf, sizeof(buf), "%.1f", minVal);
+  GUI_DisString_EN(xEnd - 60, yEnd - 20, buf, &Font16, LCD_BACKGROUND, BLUE);
 }
 
 void App_Setup(SensorIntf *sen5x) {
@@ -132,9 +274,6 @@ void App_Setup(SensorIntf *sen5x) {
 #else
   printf("Sensirion Init...\n");
 #endif
-
-  // Note: Wire.begin() is handled inside SensorReal::begin() for Arduino
-  // For PC, SensorMock::begin() does nothing.
 
   uint16_t error;
   char errorMessage[256];
@@ -193,7 +332,23 @@ void App_Loop(SensorIntf *sen5x) {
         DrawInfoScreen();
         Driver_Delay_ms(200); // Simple debounce
       }
+      // Check Chart Button
+      if (x >= BTN_CHART_X && x <= BTN_CHART_X + BTN_CHART_W && y >= BTN_CHART_Y &&
+          y <= BTN_CHART_Y + BTN_CHART_H) {
+        currentState = APP_STATE_CHART;
+        DrawChartScreen();
+        DrawChart(); // Initial draw
+        Driver_Delay_ms(200); // Simple debounce
+      }
     } else if (currentState == APP_STATE_INFO) {
+      // Check Back Button
+      if (x >= BTN_BACK_X && x <= BTN_BACK_X + BTN_BACK_W && y >= BTN_BACK_Y &&
+          y <= BTN_BACK_Y + BTN_BACK_H) {
+        currentState = APP_STATE_MAIN;
+        DrawMainScreen();
+        Driver_Delay_ms(200); // Simple debounce
+      }
+    } else if (currentState == APP_STATE_CHART) {
       // Check Back Button
       if (x >= BTN_BACK_X && x <= BTN_BACK_X + BTN_BACK_W && y >= BTN_BACK_Y &&
           y <= BTN_BACK_Y + BTN_BACK_H) {
@@ -217,79 +372,71 @@ void App_Loop(SensorIntf *sen5x) {
   Driver_Delay_ms(50);
 #endif
 
-  if (currentState == APP_STATE_MAIN &&
-      (currentMillis - lastSensorUpdate >= 1000)) {
+  if (currentMillis - lastSensorUpdate >= 1000) {
     lastSensorUpdate = currentMillis;
-    uint16_t error;
-    char errorMessage[256];
 
-    // 讀取測量值
-    float massConcentrationPm1p0;
-    float massConcentrationPm2p5;
-    float massConcentrationPm4p0;
-    float massConcentrationPm10p0;
-    float ambientHumidity;
-    float ambientTemperature;
-    float vocIndex;
-    float noxIndex;
+    // Always update sensor data regardless of state
+    App_UpdateSensor(sen5x);
 
-    error = sen5x->readMeasuredValues(
-        massConcentrationPm1p0, massConcentrationPm2p5, massConcentrationPm4p0,
-        massConcentrationPm10p0, ambientHumidity, ambientTemperature, vocIndex,
-        noxIndex);
-
-    if (error) {
-#ifdef ARDUINO
-      Serial.print("Read Error: ");
-#endif
-      sen5x->errorToString(error, errorMessage, 256);
-#ifdef ARDUINO
-      Serial.println(errorMessage);
-#else
-      printf("Read Error: %s\n", errorMessage);
-#endif
-      GUI_DisString_EN(10, 300, "Read Error...", &Font16, LCD_BACKGROUND, RED);
-    } else {
-      // 如果讀取成功，更新 LCD 顯示
-
-      // --- PM 數值 ---
-      // PM 1.0
-      displayValue(10, 60, "PM 1.0:", massConcentrationPm1p0, " ug/m3", BLACK);
-      // PM 2.5 (使用紅色強調)
-      displayValue(10, 90, "PM 2.5:", massConcentrationPm2p5, " ug/m3", RED);
-      // PM 4.0
-      displayValue(10, 120, "PM 4.0:", massConcentrationPm4p0, " ug/m3", BLACK);
-      // PM 10.0
-      displayValue(10, 150, "PM 10 :", massConcentrationPm10p0, " ug/m3",
-                   BLACK);
-
-      // --- 環境數值 ---
-      // 溫度
-      displayValue(10, 180, "Temp  :", ambientTemperature, " C", BLUE);
-      // 濕度
-      displayValue(10, 210, "Humid :", ambientHumidity, " %", BLUE);
-
-      // --- 氣體指數 ---
-      // VOC
-      // 處理 NaN 狀況 (感測器預熱時可能是 NaN)
-      if (isnan(vocIndex)) {
-        GUI_DisString_EN(10, 240, "VOC Idx:   n/a", &Font20, LCD_BACKGROUND,
-                         BLACK);
+    // Only update display if in MAIN state
+    if (currentState == APP_STATE_MAIN) {
+      if (!currentSensorValues.valid) {
+        GUI_DisString_EN(10, 300, "Read Error...", &Font16, LCD_BACKGROUND, RED);
       } else {
-        displayValue(10, 240, "VOC Idx:", vocIndex, "", MAGENTA);
-      }
+        // 如果讀取成功，更新 LCD 顯示
 
-      // NOx
-      if (isnan(noxIndex)) {
-        GUI_DisString_EN(10, 270, "NOx Idx:   n/a", &Font20, LCD_BACKGROUND,
-                         BLACK);
-      } else {
-        displayValue(10, 270, "NOx Idx:", noxIndex, "", MAGENTA);
+        // --- PM 數值 ---
+        // PM 1.0
+        displayValue(10, 60, "PM 1.0:", currentSensorValues.massConcentrationPm1p0, " ug/m3", BLACK);
+        // PM 2.5 (使用紅色強調)
+        displayValue(10, 90, "PM 2.5:", currentSensorValues.massConcentrationPm2p5, " ug/m3", RED);
+        // PM 4.0
+        displayValue(10, 120, "PM 4.0:", currentSensorValues.massConcentrationPm4p0, " ug/m3", BLACK);
+        // PM 10.0
+        displayValue(10, 150, "PM 10 :", currentSensorValues.massConcentrationPm10p0, " ug/m3",
+                     BLACK);
+
+        // --- 環境數值 ---
+        // 溫度
+        displayValue(10, 180, "Temp  :", currentSensorValues.ambientTemperature, " C", BLUE);
+        // 濕度
+        displayValue(10, 210, "Humid :", currentSensorValues.ambientHumidity, " %", BLUE);
+
+        // --- 氣體指數 ---
+        // VOC
+        // 處理 NaN 狀況 (感測器預熱時可能是 NaN)
+        if (isnan(currentSensorValues.vocIndex)) {
+          GUI_DisString_EN(10, 240, "VOC Idx:   n/a", &Font20, LCD_BACKGROUND,
+                           BLACK);
+        } else {
+          displayValue(10, 240, "VOC Idx:", currentSensorValues.vocIndex, "", MAGENTA);
+        }
+
+        // NOx
+        if (isnan(currentSensorValues.noxIndex)) {
+          GUI_DisString_EN(10, 270, "NOx Idx:   n/a", &Font20, LCD_BACKGROUND,
+                           BLACK);
+        } else {
+          displayValue(10, 270, "NOx Idx:", currentSensorValues.noxIndex, "", MAGENTA);
+        }
       }
     }
   } else {
     // In Info state, we just wait for touch events.
     // Maybe sleep a bit to save CPU in emulation
     Driver_Delay_ms(100);
+  }
+
+  // Chart Update
+  if (currentMillis - lastChartUpdate >= CHART_UPDATE_INTERVAL) {
+    lastChartUpdate = currentMillis;
+    if (currentSensorValues.valid) {
+      // Use PM2.5 for the chart
+      App_AddChartData(currentSensorValues.massConcentrationPm2p5);
+
+      if (currentState == APP_STATE_CHART) {
+        DrawChart();
+      }
+    }
   }
 }
