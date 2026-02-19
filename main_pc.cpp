@@ -61,9 +61,13 @@ int main(int argc, char *argv[]) {
 
   // Parse arguments first to configure system
   bool testMode = false;
+  bool benchmarkMode = false;
   for (int i = 1; i < argc; ++i) {
-    if (std::string(argv[i]) == "--test") {
+    std::string arg = argv[i];
+    if (arg == "--test") {
       testMode = true;
+    } else if (arg == "--benchmark") {
+      benchmarkMode = true;
     }
   }
 
@@ -105,6 +109,12 @@ int main(int argc, char *argv[]) {
       if (loops >= 25) {
         // Save screenshot
         LCD_SaveScreenshot("screenshot.bmp");
+        break;
+      }
+    } else if (benchmarkMode) {
+      loops++;
+      // Run 25 loops for benchmarking (with delays enabled)
+      if (loops >= 25) {
         break;
       }
     }

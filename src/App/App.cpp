@@ -289,7 +289,9 @@ void App_Loop(SensorIntf *sen5x) {
     }
   } else {
     // In Info state, we just wait for touch events.
-    // Maybe sleep a bit to save CPU in emulation
-    Driver_Delay_ms(100);
+    // Reduce delay to improve responsiveness and match emulator timing better.
+    // On Arduino, a shorter delay (e.g. 10ms) suffices to yield.
+    // On PC, the main loop already has a 50ms delay/pacing, so we don't need much here.
+    Driver_Delay_ms(10);
   }
 }

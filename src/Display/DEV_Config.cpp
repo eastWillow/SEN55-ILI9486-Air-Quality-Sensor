@@ -69,6 +69,8 @@ void Driver_Delay_us(int xus) {
 #include <SDL2/SDL.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <thread>
+#include <chrono>
 
 static bool s_fastMode = false;
 
@@ -92,7 +94,7 @@ uint8_t SPI4W_Read_Byte(uint8_t DATA) { return 0; }
 void Driver_Delay_ms(unsigned long xms) {
   if (s_fastMode)
     return;
-  SDL_Delay(xms);
+  std::this_thread::sleep_for(std::chrono::milliseconds(xms));
 }
 
 void Driver_Delay_us(int xus) {
