@@ -43,9 +43,6 @@ void App_ResetState() {
 
 AppState App_GetState() { return currentState; }
 
-// 用於顯示數值的緩衝區
-static char buf[30];
-
 // 輔助函式：在指定位置顯示標籤與數值
 static void displayValue(uint16_t x, uint16_t y, const char *label, float value,
                          const char *unit, uint16_t color) {
