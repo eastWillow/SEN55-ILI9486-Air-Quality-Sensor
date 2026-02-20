@@ -149,23 +149,92 @@ void LCD_Quit() {
     SDL_Quit();
 }
 
-// Screenshot function for PC
-void LCD_SaveScreenshot(const char* filename) {
-    SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormatFrom(frameBuffer, WINDOW_WIDTH, WINDOW_HEIGHT, 16, WINDOW_WIDTH * 2, SDL_PIXELFORMAT_RGB565);
+#pragma pack(push, 1)
+struct BMPFileHeader {
+    uint16_t type;      // Magic identifier: "BM"
+    uint32_t size;      // File size in bytes
+    uint16_t reserved1;
+    uint16_t reserved2;
+    uint32_t offset;    // Offset to image data
+};
 
-    // Convert to RGB24 (RGB888) format to ensure standard BMP compatibility (especially for ImageMagick/CI)
-    SDL_Surface* convertedSurface = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_RGB24, 0);
+struct BMPInfoHeader {
+    uint32_t size;      // Header size in bytes (40)
+    int32_t  width;     // Width of the image
+    int32_t  height;    // Height of the image
+    uint16_t planes;    // Number of color planes (1)
+    uint16_t bitCount;  // Bits per pixel (24)
+    uint32_t compression;
+    uint32_t sizeImage;
+    int32_t  xPelsPerMeter;
+    int32_t  yPelsPerMeter;
+    uint32_t clrUsed;
+    uint32_t clrImportant;
+};
+#pragma pack(pop)
 
-    if (convertedSurface) {
-        SDL_SaveBMP(convertedSurface, filename);
-        SDL_FreeSurface(convertedSurface);
-    } else {
-        // Fallback if conversion fails (though unlikely)
-        fprintf(stderr, "Surface conversion failed! saving original. SDL_Error: %s\n", SDL_GetError());
-        SDL_SaveBMP(surface, filename);
+// Manual BMP Writer to ensure standard 24-bit output
+// Replaces usage of SDL_SaveBMP to avoid dependency on SDL version/flags
+static void WriteBMP(const char* filename, uint16_t* buffer, int width, int height) {
+    FILE* f = fopen(filename, "wb");
+    if (!f) {
+        fprintf(stderr, "Failed to open file for screenshot: %s\n", filename);
+        return;
     }
 
-    SDL_FreeSurface(surface);
+    int rowPadding = (4 - (width * 3) % 4) % 4;
+    uint32_t dataSize = (width * 3 + rowPadding) * height;
+    uint32_t headerSize = sizeof(BMPFileHeader) + sizeof(BMPInfoHeader);
+
+    BMPFileHeader fileHeader;
+    fileHeader.type = 0x4D42; // "BM" (Little Endian)
+    fileHeader.size = headerSize + dataSize;
+    fileHeader.reserved1 = 0;
+    fileHeader.reserved2 = 0;
+    fileHeader.offset = headerSize;
+
+    BMPInfoHeader infoHeader;
+    infoHeader.size = sizeof(BMPInfoHeader);
+    infoHeader.width = width;
+    infoHeader.height = height; // Positive height = Bottom-Up (standard BMP)
+    infoHeader.planes = 1;
+    infoHeader.bitCount = 24;
+    infoHeader.compression = 0;
+    infoHeader.sizeImage = dataSize;
+    infoHeader.xPelsPerMeter = 2835; // 72 DPI
+    infoHeader.yPelsPerMeter = 2835;
+    infoHeader.clrUsed = 0;
+    infoHeader.clrImportant = 0;
+
+    fwrite(&fileHeader, sizeof(fileHeader), 1, f);
+    fwrite(&infoHeader, sizeof(infoHeader), 1, f);
+
+    // Write pixel data (Bottom-Up)
+    // Row padding bytes must be zero
+    uint8_t padding[3] = {0, 0, 0};
+
+    for (int y = height - 1; y >= 0; y--) {
+        for (int x = 0; x < width; x++) {
+            uint16_t pixel = buffer[y * width + x];
+            uint8_t r, g, b;
+            RGB565_To_RGB888(pixel, &r, &g, &b);
+            // BMP uses BGR format
+            fwrite(&b, 1, 1, f);
+            fwrite(&g, 1, 1, f);
+            fwrite(&r, 1, 1, f);
+        }
+        if (rowPadding > 0) {
+            fwrite(padding, 1, rowPadding, f);
+        }
+    }
+
+    fclose(f);
+}
+
+// Screenshot function for PC
+void LCD_SaveScreenshot(const char* filename) {
+    // Use manual writer for consistent, valid BMP output in all environments (Local/CI)
+    WriteBMP(filename, frameBuffer, WINDOW_WIDTH, WINDOW_HEIGHT);
 }
 
 void SDL_SetMouseState(int x, int y, bool pressed) {
