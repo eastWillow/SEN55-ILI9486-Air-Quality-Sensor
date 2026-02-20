@@ -27,11 +27,11 @@ jobs:
       run: cmake -B build_tests -S tests
 
     - name: Build Unit Tests
-      run: cmake --build build_tests --target emulator_test
+      run: cmake --build build_tests
 
     - name: Run Unit Tests
       working-directory: build_tests
-      run: xvfb-run ctest -R CoreLibTest --output-on-failure --output-junit testReport.xml
+      run: xvfb-run ctest -R "CoreLibTest|GUITest" --output-on-failure --output-junit testReport.xml
 
     - name: Test Report
       uses: EnricoMi/publish-unit-test-result-action/linux@v2
