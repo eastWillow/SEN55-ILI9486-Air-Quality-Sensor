@@ -73,16 +73,6 @@ void LCD_SetGramScanWay(LCD_SCAN_DIR Scan_dir);
 
 void LCD_WriteReg(uint8_t Reg);
 void LCD_WriteData(uint8_t Data);
-/*
-//LCD set cursor + windows + color
-void LCD_SetCursor(POINT Xpoint, POINT Ypoint);
-void LCD_SetColor(POINT Xpoint, POINT Ypoint, COLOR Color);
-void LCD_SetWindow(POINT Xstart, POINT Ystart, POINT Xend, POINT Yend);
-void LCD_Clear(COLOR  Color);
-void LCD_Display(void);
-void LCD_ClearWindow(POINT Xstart, POINT Ystart, POINT Xend, POINT Yend, COLOR Color);
-void LCD_DisWindow(POINT Xstart, POINT Ystart, POINT Xend, POINT Yend);
-*/
 
 void LCD_SetWindow(POINT Xstart, POINT Ystart, POINT Xend, POINT Yend);
 void LCD_SetCursor(POINT Xpoint, POINT Ypoint);
