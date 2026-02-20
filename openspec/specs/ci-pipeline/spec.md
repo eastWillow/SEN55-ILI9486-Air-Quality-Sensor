@@ -1,13 +1,13 @@
 ## ADDED Requirements
 
 ### Requirement: Independent Test Pipeline
-The CI/CD test workflow must be able to build and run tests using the standalone test configuration.
+The CI/CD test workflow must be able to build tests efficiently using a unified configuration, removing redundant builds across workflows while maintaining standalone execution capabilities.
 
 #### Scenario: Running Tests in CI
-- **WHEN** The tests workflow is triggered in GitHub Actions
-- **THEN** The workflow configures CMake directly from the `tests` subdirectory
-- **AND** The build completes successfully without requiring the main project build
-- **AND** All tests execute and pass
+- **WHEN** The unified tests workflow is triggered in GitHub Actions
+- **THEN** The workflow configures CMake directly from the `tests` subdirectory (or root, whichever is optimal)
+- **AND** The build completes successfully exactly once without requiring multiple builds for different test stages
+- **AND** All tests execute and pass sequentially in their respective steps (Smoke, CoreLib, GUI, Performance)
 
 ### Requirement: Headless Display Support
 The CI/CD test workflow MUST provide a virtual display for graphics-based tests.

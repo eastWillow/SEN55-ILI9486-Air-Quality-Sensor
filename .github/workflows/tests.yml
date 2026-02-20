@@ -1,4 +1,4 @@
-name: Unit Tests
+name: Tests
 
 on:
   push:
@@ -21,20 +21,44 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y xvfb libsdl2-dev cmake
+        sudo apt-get install -y xvfb libsdl2-dev cmake imagemagick
 
     - name: Configure CMake (Standalone Tests)
       run: cmake -B build_tests -S tests
 
-    - name: Build Unit Tests
+    - name: Build All Tests
       run: cmake --build build_tests
 
-    - name: Run Unit Tests
+    - name: Step 1 - Check Smoke Test (DisplayIntegrationTest)
       working-directory: build_tests
-      run: xvfb-run ctest -R "CoreLibTest|GUITest|DebouncePerformanceTest" --output-on-failure --output-junit testReport.xml
+      run: xvfb-run -a ctest -R "DisplayIntegrationTest" --output-on-failure --output-junit testReport-smoke.xml
 
-    - name: Test Report
+    - name: Step 2 - Check CoreLibTest
+      working-directory: build_tests
+      if: success()
+      run: xvfb-run -a ctest -R "CoreLibTest" --output-on-failure --output-junit testReport-core.xml
+
+    - name: Step 3 - Check GUITest
+      working-directory: build_tests
+      if: success()
+      run: xvfb-run -a ctest -R "GUITest" --output-on-failure --output-junit testReport-gui.xml
+
+    - name: Step 4 - Check PerformanceTest
+      working-directory: build_tests
+      if: success()
+      run: xvfb-run -a ctest -R "DebouncePerformanceTest" --output-on-failure --output-junit testReport-perf.xml
+
+    - name: Upload Test Report
       uses: EnricoMi/publish-unit-test-result-action/linux@v2
-      if: runner.os == 'Linux'
+      if: always()
       with:
-        files: build_tests/**.xml
+        files: build_tests/testReport-*.xml
+
+    - name: Upload Artifacts on Failure (Smoke Test)
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-artifacts
+        path: |
+          build_tests/actual_*.bmp
+          build_tests/diff_*.bmp
