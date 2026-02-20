@@ -92,7 +92,7 @@ gh act push
 ```
 
 Web mockup Display:
-https://eastwillowlearninglog.github.io/SEN55-ILI9486-Air-Quality-Sensor/
+[https://eastwillow.github.io/SEN55-ILI9486-Air-Quality-Sensor/](https://eastwillow.github.io/SEN55-ILI9486-Air-Quality-Sensor/)
 
 Software Bill of Materials:
 * ILI9486 Driver Form [3.5inch TFT Touch Shield](https://www.waveshare.com/wiki/3.5inch_TFT_Touch_Shield)
