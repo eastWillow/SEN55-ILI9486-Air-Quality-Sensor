@@ -1,0 +1,8 @@
+- [x] Define `APP_STATE_CHART` and button coordinates in `App.h`.
+- [x] Implement circular buffer storage for PM2.5 data.
+- [x] Implement `DrawChartScreen` with auto-scaling line graph.
+- [x] Add "TREND" button to `DrawMainScreen`.
+- [x] Update `App_Loop` to handle state transitions and background data logging.
+- [x] Create integration test `CheckpointChart` to verify navigation and rendering.
+- [x] Implement manual `WriteBMP` to ensure valid 24-bit screenshots in CI.
+- [x] Update golden sample screenshots (`startup.bmp`, `final.bmp`, `chart.bmp`).
