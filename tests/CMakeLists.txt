@@ -83,6 +83,16 @@ target_link_libraries(emulator_test
 # Register the unit test
 gtest_discover_tests(emulator_test)
 
+# Build the GUI Test executable
+add_executable(gui_test unit/gui_test.cpp)
+
+target_link_libraries(gui_test
+    GTest::gtest_main
+    CoreLib
+)
+
+gtest_discover_tests(gui_test)
+
 # Build the Performance Test executable
 add_executable(performance_test unit/performance_test.cpp)
 

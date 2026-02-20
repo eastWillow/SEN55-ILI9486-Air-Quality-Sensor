@@ -441,25 +441,20 @@ void GUI_DisGrayMap(POINT Xpoint, POINT Ypoint, const unsigned char *pBmp)
 
 sFONT *GUI_GetFontSize(POINT Dx, POINT Dy)
 {
-  sFONT *Font = NULL;
-  if (Dx > Font24.Width && Dy > Font24.Height) {
-    Font = &Font24;
-  } else if ((Dx > Font20.Width && Dx < Font24.Width) &&
-             (Dy > Font20.Height && Dy < Font24.Height)) {
-    Font = &Font20;
-  } else if ((Dx > Font16.Width && Dx < Font20.Width) &&
-             (Dy > Font16.Height && Dy < Font20.Height)) {
-    Font = &Font16;
-  } else if ((Dx > Font12.Width && Dx < Font16.Width) &&
-             (Dy > Font12.Height && Dy < Font16.Height)) {
-    Font = &Font12;
-  } else if ((Dx > Font8.Width && Dx < Font12.Width) &&
-             (Dy > Font8.Height && Dy < Font12.Height)) {
-    Font = &Font8;
-  } else {
-    DEBUG("Please change the display area size, or add a larger font to modify\r\n");
+  if (Dx >= Font24.Width && Dy >= Font24.Height) {
+    return &Font24;
+  } else if (Dx >= Font20.Width && Dy >= Font20.Height) {
+    return &Font20;
+  } else if (Dx >= Font16.Width && Dy >= Font16.Height) {
+    return &Font16;
+  } else if (Dx >= Font12.Width && Dy >= Font12.Height) {
+    return &Font12;
+  } else if (Dx >= Font8.Width && Dy >= Font8.Height) {
+    return &Font8;
   }
-  return Font;
+
+  DEBUG("Please change the display area size, or add a larger font to modify\r\n");
+  return NULL;
 }
 /******************************************************************************
   function:	According to the display area adaptive display time

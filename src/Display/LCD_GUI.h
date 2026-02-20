@@ -133,6 +133,7 @@ void GUI_Disbitmap(POINT Xpoint, POINT Ypoint, const unsigned char *pMap, POINT 
 void GUI_DisGrayMap(POINT Xpoint, POINT Ypoint, const unsigned char *pBmp);
 
 //Display string
+sFONT *GUI_GetFontSize(POINT Dx, POINT Dy);
 void GUI_DisChar(POINT Xstart, POINT Ystart, const char Acsii_Char, sFONT* Font, COLOR Color_Background, COLOR Color_Foreground);
 void GUI_DisString_EN(POINT Xstart, POINT Ystart, const char * pString, sFONT* Font, COLOR Color_Background, COLOR Color_Foreground );
 void GUI_DisNum(POINT Xpoint, POINT Ypoint, int32_t Nummber, sFONT* Font, COLOR Color_Background, COLOR Color_Foreground );
