@@ -60,14 +60,13 @@ uint8_t SPI4W_Read_Byte(uint8_t DATA) { return SPI.transfer(DATA); }
 ********************************************************************************/
 void Driver_Delay_ms(unsigned long xms) { delay(xms); }
 
-void Driver_Delay_us(int xus) {
-  for (int j = xus; j > 0; j--)
-    ;
-}
+void Driver_Delay_us(int xus) { delayMicroseconds(xus); }
 
 #else // PC implementation
 #include <SDL2/SDL.h>
+#include <chrono>
 #include <stdio.h>
+#include <thread>
 #include <unistd.h>
 
 static bool s_fastMode = false;
@@ -98,10 +97,7 @@ void Driver_Delay_ms(unsigned long xms) {
 void Driver_Delay_us(int xus) {
   if (s_fastMode)
     return;
-  // Approximate us delay or just no-op as it's usually for hardware timing
-  // 1ms is minimum for SDL_Delay, so we might skip or busy wait
-  // For logic emulation, it's rarely needed.
-  SDL_Delay(1);
+  std::this_thread::sleep_for(std::chrono::microseconds(xus));
 }
 
 #endif
