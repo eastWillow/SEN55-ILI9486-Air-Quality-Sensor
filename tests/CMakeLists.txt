@@ -93,6 +93,16 @@ target_link_libraries(performance_test
 
 gtest_discover_tests(performance_test)
 
+# Build the Debounce Performance Test executable
+add_executable(debounce_performance_test unit/debounce_performance_test.cpp)
+
+target_link_libraries(debounce_performance_test
+    GTest::gtest_main
+    CoreLib
+)
+
+gtest_discover_tests(debounce_performance_test)
+
 # Build the Integration Test executable
 add_executable(display_integration_test integration/display_integration_test.cpp)
 

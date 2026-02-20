@@ -18,6 +18,7 @@ protected:
   void SetUp() override {
     // Reset mouse state before each test
     SDL_SetMouseState(0, 0, false);
+    App_ResetState();
   }
 
   void TearDown() override {
@@ -48,11 +49,16 @@ TEST_F(CoreLibTest, InteractionTransitions) {
   // Initial state should be MAIN
   EXPECT_EQ(App_GetState(), APP_STATE_MAIN);
 
+  // Advance time to pass initial debounce
+  for (int i = 0; i < 5; i++) App_Loop(&sensor);
+
   // 1. Click INFO button (BTN_INFO_X, BTN_INFO_Y)
   SDL_SetMouseState(BTN_INFO_X + 5, BTN_INFO_Y + 5, true);
   App_Loop(&sensor); // Detect press
   SDL_SetMouseState(BTN_INFO_X + 5, BTN_INFO_Y + 5, false);
-  App_Loop(&sensor); // Process state change
+
+  // Advance time for debounce
+  for (int i = 0; i < 5; i++) App_Loop(&sensor);
 
   EXPECT_EQ(App_GetState(), APP_STATE_INFO)
       << "Failed to transition to INFO screen";
@@ -61,7 +67,9 @@ TEST_F(CoreLibTest, InteractionTransitions) {
   SDL_SetMouseState(BTN_BACK_X + 5, BTN_BACK_Y + 5, true);
   App_Loop(&sensor); // Detect press
   SDL_SetMouseState(BTN_BACK_X + 5, BTN_BACK_Y + 5, false);
-  App_Loop(&sensor); // Process state change
+
+  // Advance time for debounce
+  for (int i = 0; i < 5; i++) App_Loop(&sensor);
 
   EXPECT_EQ(App_GetState(), APP_STATE_MAIN)
       << "Failed to transition back to MAIN screen";

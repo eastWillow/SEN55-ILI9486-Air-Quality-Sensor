@@ -175,13 +175,37 @@ void App_Setup(SensorIntf *sen5x) {
 }
 
 static unsigned long lastSensorUpdate = 0;
+static unsigned long lastTransitionTime = 0;
+#ifndef ARDUINO
+static unsigned long mockMillis = 0;
+#endif
+
+void App_ResetState(void) {
+  currentState = APP_STATE_MAIN;
+  lastSensorUpdate = 0;
+  lastTransitionTime = 0;
+#ifndef ARDUINO
+  mockMillis = 0;
+#endif
+}
 
 void App_Loop(SensorIntf *sen5x) {
+  // --- Timing ---
+  unsigned long currentMillis;
+#ifdef ARDUINO
+  currentMillis = millis();
+#else
+  // Mock millis or just increment logic
+  mockMillis += 50; // Simulate 50ms per loop
+  currentMillis = mockMillis;
+#endif
+
   // --- Touch Handling ---
   unsigned char touchState = TP_Scan(0);
   uint16_t x = 0, y = 0;
 
-  if (touchState & TP_PRESS_DOWN) {
+  if ((touchState & TP_PRESS_DOWN) &&
+      (currentMillis - lastTransitionTime >= 200)) {
     TP_GetXY(&x, &y);
 
     // Debounce / State Transition
@@ -191,7 +215,7 @@ void App_Loop(SensorIntf *sen5x) {
           y <= BTN_INFO_Y + BTN_INFO_H) {
         currentState = APP_STATE_INFO;
         DrawInfoScreen();
-        Driver_Delay_ms(200); // Simple debounce
+        lastTransitionTime = currentMillis;
       }
     } else if (currentState == APP_STATE_INFO) {
       // Check Back Button
@@ -199,24 +223,17 @@ void App_Loop(SensorIntf *sen5x) {
           y <= BTN_BACK_Y + BTN_BACK_H) {
         currentState = APP_STATE_MAIN;
         DrawMainScreen();
-        Driver_Delay_ms(200); // Simple debounce
+        lastTransitionTime = currentMillis;
       }
     }
   }
 
-  // --- Update Sensor Data (Only in MAIN State, Every 1000ms) ---
-  unsigned long currentMillis;
-#ifdef ARDUINO
-  currentMillis = millis();
-#else
-  // Mock millis or just increment logic
-  static unsigned long mockMillis = 0;
-  mockMillis += 50; // Simulate 50ms per loop
-  currentMillis = mockMillis;
+#ifndef ARDUINO
   // Add small delay to avoid CPU hogging on PC
   Driver_Delay_ms(50);
 #endif
 
+  // --- Update Sensor Data (Only in MAIN State, Every 1000ms) ---
   if (currentState == APP_STATE_MAIN &&
       (currentMillis - lastSensorUpdate >= 1000)) {
     lastSensorUpdate = currentMillis;
