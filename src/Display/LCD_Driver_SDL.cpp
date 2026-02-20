@@ -63,10 +63,19 @@ void LCD_Init(LCD_SCAN_DIR LCD_ScanDir, uint16_t LCD_BLval) {
 
     // Create texture for the framebuffer
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB565, SDL_TEXTUREACCESS_STREAMING, WINDOW_WIDTH, WINDOW_HEIGHT);
+    if (texture == NULL) {
+        fprintf(stderr, "Texture could not be created! SDL_Error: %s\n", SDL_GetError());
+        exit(1);
+    }
 
     // Allocate framebuffer
-    frameBuffer = (uint16_t*)malloc(WINDOW_WIDTH * WINDOW_HEIGHT * sizeof(uint16_t));
-    memset(frameBuffer, 0xFFFF, WINDOW_WIDTH * WINDOW_HEIGHT * sizeof(uint16_t)); // White init
+    size_t bufferSize = WINDOW_WIDTH * WINDOW_HEIGHT * sizeof(uint16_t);
+    frameBuffer = (uint16_t*)malloc(bufferSize);
+    if (frameBuffer == NULL) {
+        fprintf(stderr, "Framebuffer could not be allocated!\n");
+        exit(1);
+    }
+    memset(frameBuffer, 0xFFFF, bufferSize); // White init
 }
 
 void LCD_SetGramScanWay(LCD_SCAN_DIR Scan_dir) {
