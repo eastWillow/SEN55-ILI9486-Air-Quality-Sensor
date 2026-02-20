@@ -12,15 +12,6 @@
 #include <cstring>
 #include <string>
 using namespace std;
-// Define String class for PC if needed, or use std::string and helper
-// But the original code uses Arduino String.
-// Let's implement a minimal String helper or use std::string and adapt.
-#define String std::to_string
-#endif
-
-// Helper for PC compatibility with Arduino String
-#ifndef ARDUINO
-// A simple adapter if needed, or just change logic to use snprintf
 #endif
 
 // Application State
