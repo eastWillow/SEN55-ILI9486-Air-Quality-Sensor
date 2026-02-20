@@ -1,5 +1,6 @@
 #include "DEV_Config.h"
 #include "EmulatorEngine.h"
+#include "LCD_Driver_SDL.h"
 #include "SensorMock.h"
 #include <cstdlib>
 #include <fstream>
@@ -128,6 +129,57 @@ TEST_F(DisplayIntegrationTest, CheckpointFinal) {
     ASSERT_LE(diff, 0) << "Final screen mismatch! See diff_final.bmp (" << diff
                        << " pixels differ)";
   }
+
+  engine.shutdown();
+}
+
+TEST_F(DisplayIntegrationTest, CheckpointButtonFeedback) {
+  SensorMock sensor;
+  MockTimeProvider timeProvider;
+  EmulatorEngine engine;
+
+  engine.initialize(&sensor, &timeProvider);
+
+  // Initial state MAIN
+  engine.stepFrames(1);
+
+  // 1. Press INFO button (Coordinate defined in App.h)
+  // We use the coordinate relative to the button
+  SDL_SetMouseState(400 + 5, 10 + 5, true);
+  engine.stepFrames(1); // Detect press, enter feedback
+  SDL_SetMouseState(400 + 5, 10 + 5, false);
+
+  // Advance 50ms (feedback window is 100ms)
+  timeProvider.advance(50);
+  engine.stepFrames(1); // Feedback should still be active
+
+  engine.captureScreenshot("actual_feedback_info.bmp");
+
+  int diff =
+      CompareWithReference("actual_feedback_info.bmp", "feedback_info.bmp");
+
+  if (diff == -2) {
+    std::cout
+        << "[WARNING] Reference missing. Generated actual_feedback_info.bmp."
+        << std::endl;
+    // We don't FAIL here if it's the first time, but we notify.
+    // Actually, following the project pattern:
+    FAIL() << "Reference image missing: feedback_info.bmp. Generated "
+              "actual_feedback_info.bmp for manual inspection.";
+  } else if (diff == -1) {
+    FAIL() << "ImageMagick comparison failed.";
+  } else {
+    ASSERT_LE(diff, 0) << "Feedback screen mismatch! (" << diff
+                       << " pixels differ)";
+  }
+
+  // Advance another 100ms (total > 100ms from start of feedback)
+  timeProvider.advance(100);
+  engine.stepFrames(1); // Should transition to INFO screen
+
+  engine.captureScreenshot("actual_after_feedback.bmp");
+  // Comparison for the final Info screen could also be done if we had a
+  // reference.
 
   engine.shutdown();
 }

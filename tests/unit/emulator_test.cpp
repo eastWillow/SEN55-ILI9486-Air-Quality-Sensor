@@ -51,24 +51,36 @@ TEST_F(CoreLibTest, InteractionTransitions) {
 
   // 1. Click INFO button (BTN_INFO_X, BTN_INFO_Y)
   SDL_SetMouseState(BTN_INFO_X + 5, BTN_INFO_Y + 5, true);
-  App_Loop(&sensor); // Detect press
+  App_Loop(&sensor); // Detect press, enter feedback
   SDL_SetMouseState(BTN_INFO_X + 5, BTN_INFO_Y + 5, false);
+
+  // State should still be MAIN during feedback
+  EXPECT_EQ(App_GetState(), APP_STATE_MAIN);
+
+  // Advance 150ms to clear feedback (100ms)
+  timeProvider.advance(150);
   App_Loop(&sensor); // Process state change
 
   EXPECT_EQ(App_GetState(), APP_STATE_INFO)
-      << "Failed to transition to INFO screen";
+      << "Failed to transition to INFO screen after feedback";
 
   // Explicitly advance time past the 200ms debounce threshold
   timeProvider.advance(250);
 
   // 2. Click BACK button (BTN_BACK_X, BTN_BACK_Y)
   SDL_SetMouseState(BTN_BACK_X + 5, BTN_BACK_Y + 5, true);
-  App_Loop(&sensor); // Detect press
+  App_Loop(&sensor); // Detect press, enter feedback
   SDL_SetMouseState(BTN_BACK_X + 5, BTN_BACK_Y + 5, false);
+
+  // State should still be INFO during feedback
+  EXPECT_EQ(App_GetState(), APP_STATE_INFO);
+
+  // Advance 150ms to clear feedback
+  timeProvider.advance(150);
   App_Loop(&sensor); // Process state change
 
   EXPECT_EQ(App_GetState(), APP_STATE_MAIN)
-      << "Failed to transition back to MAIN screen";
+      << "Failed to transition back to MAIN screen after feedback";
 }
 
 /**

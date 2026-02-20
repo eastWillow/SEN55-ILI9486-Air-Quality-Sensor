@@ -38,14 +38,17 @@ TEST_F(DebouncePerformanceTest, NonBlockingDebounce) {
 
   // Measure how many mockMillis pass during App_Loop
   unsigned long startMillis = timeProvider.getMillis();
-  App_Loop(&sensor); // Should detect press and switch state
-  timeProvider.advance(
-      50); // Simulate the fact that App_Loop took some ms (although we removed
-           // the internal advance, we expect it to return fast)
+  App_Loop(&sensor); // Should detect press, start feedback
+  timeProvider.advance(50);
   unsigned long elapsed = timeProvider.getMillis() - startMillis;
 
-  // The loop itself advances mockMillis by 50ms.
-  // We expect it NOT to block for an extra 200ms.
+  // The state should NOT follow until feedback is done (100ms)
+  EXPECT_EQ(App_GetState(), APP_STATE_MAIN);
+
+  // Advance to complete feedback
+  timeProvider.advance(60);
+  App_Loop(&sensor);
+
   EXPECT_EQ(App_GetState(), APP_STATE_INFO);
   EXPECT_LE(elapsed, 100)
       << "App_Loop blocked too long, potentially still using delay";
@@ -61,13 +64,15 @@ TEST_F(DebouncePerformanceTest, NonBlockingDebounce) {
       << "State transitioned during debounce period";
 
   // Advance mockMillis to simulate time passing beyond debounce period
-  timeProvider.advance(200);
+  timeProvider.advance(250);
 
   // 3. Click BACK button again after debounce period
-  App_Loop(&sensor);
+  App_Loop(&sensor); // Starts feedback phase
+  timeProvider.advance(150);
+  App_Loop(&sensor); // Processes transition
 
   EXPECT_EQ(App_GetState(), APP_STATE_MAIN)
-      << "State failed to transition after debounce period";
+      << "State failed to transition after debounce period and feedback";
 }
 
 /**
@@ -87,8 +92,11 @@ TEST_F(DebouncePerformanceTest, ClockRollover) {
 
   // 1. Click INFO button
   SDL_SetMouseState(BTN_INFO_X + 5, BTN_INFO_Y + 5, true);
-  App_Loop(&sensor); // This sets lastTransitionTime = mockMillis which is
-                     // ULONG_MAX - 50
+  App_Loop(&sensor); // Starts feedback
+
+  // Advance to complete feedback
+  timeProvider.advance(150);
+  App_Loop(&sensor); // Completes transition
 
   EXPECT_EQ(App_GetState(), APP_STATE_INFO);
 
@@ -102,16 +110,16 @@ TEST_F(DebouncePerformanceTest, ClockRollover) {
   App_Loop(&sensor);
   timeProvider.advance(50);
   App_Loop(&sensor);
-  timeProvider.advance(50);
+  timeProvider.advance(100);
   App_Loop(&sensor);
-  // Total added: ~ 200ms
+  // Total added: ~ 250ms
 
-  // The expression (currentMillis - lastTransitionTime) should correctly yield
-  // ~200. 149 - (ULONG_MAX - 50) = 149 - (-51) = 200.
-
-  // 2. Click BACK button and verify it transitions, proving the formula works
+  // 2. Click BACK button and verify it transitions
   SDL_SetMouseState(BTN_BACK_X + 5, BTN_BACK_Y + 5, true);
-  App_Loop(&sensor);
+  App_Loop(&sensor); // Starts feedback
+
+  timeProvider.advance(150);
+  App_Loop(&sensor); // Completes transition
 
   EXPECT_EQ(App_GetState(), APP_STATE_MAIN)
       << "Rollover prevented state transition";
