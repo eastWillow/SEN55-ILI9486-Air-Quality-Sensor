@@ -75,6 +75,35 @@ protected:
       return -1;
     }
   }
+  // Helper to compare two images existing in the current working directory
+  int CompareLocalImages(const std::string &image1, const std::string &image2) {
+    std::string diffPath = "diff_local_" + image1 + "_" + image2;
+    std::string cmd = "compare -metric AE " + image1 + " " + image2 + " " +
+                      diffPath + " 2>&1";
+
+    FILE *pipe = popen(cmd.c_str(), "r");
+    if (!pipe)
+      return -1;
+
+    char buffer[128];
+    std::string result = "";
+    while (fgets(buffer, sizeof(buffer), pipe) != NULL) {
+      result += buffer;
+    }
+    pclose(pipe);
+
+    size_t first = result.find_first_not_of(" \t\n\r");
+    if (first == std::string::npos)
+      return -1;
+    size_t last = result.find_last_not_of(" \t\n\r");
+    result = result.substr(first, (last - first + 1));
+
+    try {
+      return std::stoi(result);
+    } catch (...) {
+      return -1;
+    }
+  }
 };
 
 TEST_F(DisplayIntegrationTest, CheckpointStartup) {
@@ -83,6 +112,9 @@ TEST_F(DisplayIntegrationTest, CheckpointStartup) {
   EmulatorEngine engine;
 
   engine.initialize(&sensor, &timeProvider);
+
+  // Deterministic sensor values
+  sensor.setFixedValue(10, 15, 20, 25, 30, 21, 50, 20);
 
   // Frame 0: Just initialized
   engine.captureScreenshot("actual_startup.bmp");
@@ -110,6 +142,9 @@ TEST_F(DisplayIntegrationTest, CheckpointFinal) {
   EmulatorEngine engine;
 
   engine.initialize(&sensor, &timeProvider);
+
+  // Deterministic sensor values
+  sensor.setFixedValue(10, 15, 20, 25, 30, 21, 50, 20);
 
   // Run 25 frames
   engine.stepFrames(25);
@@ -139,6 +174,9 @@ TEST_F(DisplayIntegrationTest, CheckpointButtonFeedback) {
   EmulatorEngine engine;
 
   engine.initialize(&sensor, &timeProvider);
+
+  // Deterministic sensor values
+  sensor.setFixedValue(10, 15, 20, 25, 30, 21, 50, 20);
 
   // Initial state MAIN
   engine.stepFrames(1);
@@ -180,6 +218,115 @@ TEST_F(DisplayIntegrationTest, CheckpointButtonFeedback) {
   engine.captureScreenshot("actual_after_feedback.bmp");
   // Comparison for the final Info screen could also be done if we had a
   // reference.
+
+  engine.shutdown();
+}
+
+TEST_F(DisplayIntegrationTest, CheckpointChart) {
+  SensorMock sensor;
+  MockTimeProvider timeProvider;
+  EmulatorEngine engine;
+
+  engine.initialize(&sensor, &timeProvider);
+
+  // Use fixed values for determinism
+  sensor.setFixedValue(20, 25, 30, 35, 40, 22, 100, 50);
+
+  // Initial state MAIN
+  engine.stepFrames(1);
+
+  // 1. Advance time to populate trend data
+  // Record 10 points (100 seconds)
+  for (int i = 0; i < 10; i++) {
+    // Vary the PM2.5 value slightly for each point to see a line
+    sensor.setFixedValue(20, 25 + i * 2, 30, 35, 40, 22, 100, 50);
+    timeProvider.advance(10000); // 10s
+    engine.stepFrames(1);        // App_Loop should record trend data
+  }
+
+  // 2. Press TREND button (Coordinates 320, 10, W=75, H=30)
+  SDL_SetMouseState(320 + 5, 10 + 5, true);
+  engine.stepFrames(1); // Detect press, enter feedback
+  SDL_SetMouseState(320 + 5, 10 + 5, false);
+
+  // 3. Advance past feedback (100ms)
+  timeProvider.advance(150);
+  engine.stepFrames(1); // Transition to TREND state
+
+  // 4. Capture screenshot
+  engine.captureScreenshot("actual_trend_chart.bmp");
+
+  int diff = CompareWithReference("actual_trend_chart.bmp", "trend_chart.bmp");
+
+  if (diff == -2) {
+    std::cout
+        << "[WARNING] Reference missing. Generated actual_trend_chart.bmp."
+        << std::endl;
+    FAIL() << "Reference image missing: trend_chart.bmp. Generated "
+              "actual_trend_chart.bmp for manual inspection.";
+  } else if (diff == -1) {
+    FAIL() << "ImageMagick comparison failed.";
+  } else {
+    ASSERT_LE(diff, 0) << "Trend chart screen mismatch! (" << diff
+                       << " pixels differ)";
+  }
+
+  engine.shutdown();
+}
+
+TEST_F(DisplayIntegrationTest, CheckpointYAxisStability) {
+  SensorMock sensor;
+  MockTimeProvider timeProvider;
+  EmulatorEngine engine;
+
+  engine.initialize(&sensor, &timeProvider);
+
+  // 1. Initial State (Trend Page with 400 zero values)
+  sensor.setFixedValue(0, 0, 0, 0, 0, 0, 0, 0);
+  for (int i = 0; i < 400; i++) {
+    timeProvider.advance(10000);
+    engine.stepFrames(1);
+  }
+
+  // Go to Trend Screen
+  SDL_SetMouseState(BTN_TREND_X + 5, BTN_TREND_Y + 5, true);
+  engine.stepFrames(1);
+  SDL_SetMouseState(BTN_TREND_X + 5, BTN_TREND_Y + 5, false);
+  timeProvider.advance(150);
+  engine.stepFrames(1);
+
+  // Capture Step 1 Baseline (Range 0-20 or similar padding)
+  engine.captureScreenshot("y_axis_step1.bmp");
+
+  // 2. Change to high values (Range 0-100+)
+  sensor.setFixedValue(100, 100, 100, 100, 100, 100, 100, 100);
+  for (int i = 0; i < 5; i++) {
+    timeProvider.advance(10000);
+    engine.stepFrames(1); // This will update trend data and redraw chart
+  }
+  engine.captureScreenshot("y_axis_step2.bmp");
+
+  // 3. Change back to low values (Range 0-20 again)
+  sensor.setFixedValue(0, 0, 0, 0, 0, 0, 0, 0);
+  // We need to push out ALL the 100s to make the chart identical to Step 1
+  // TREND_MAX_POINTS is 400.
+  for (int i = 0; i < 400; i++) {
+    timeProvider.advance(10000);
+    engine.stepFrames(1);
+  }
+  engine.captureScreenshot("y_axis_step3.bmp");
+
+  // Compare Step 1 and Step 3
+  int diff = CompareLocalImages("y_axis_step3.bmp", "y_axis_step1.bmp");
+
+  if (diff == -1) {
+    FAIL() << "ImageMagick comparison failed.";
+  } else {
+    // We expect ZERO pixels difference. If > 0, digits are likely
+    // overlapping/leaking.
+    ASSERT_EQ(diff, 0) << "Y-Axis stability failed! pixels differ: " << diff
+                       << ". Old digits likely remained on screen.";
+  }
 
   engine.shutdown();
 }

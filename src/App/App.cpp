@@ -14,11 +14,35 @@
 using namespace std;
 #endif
 
+namespace {
 // Application State
-static AppState currentState = APP_STATE_MAIN;
-static unsigned long lastSensorUpdate = 0;
-static unsigned long lastTransitionTime = (unsigned long)-200;
-static TimeProvider *appTime = nullptr;
+AppState currentState = APP_STATE_MAIN;
+unsigned long lastSensorUpdate = 0;
+unsigned long lastTransitionTime = (unsigned long)-200;
+TimeProvider *appTime = nullptr;
+
+// Feedback state
+bool inFeedback = false;
+unsigned long feedbackStartTime = 0;
+AppState pendingState = APP_STATE_MAIN;
+
+// PM2.5 Trend Data
+#define TREND_MAX_POINTS 400
+float pm25History[TREND_MAX_POINTS];
+int trendCount = 0;
+unsigned long lastTrendUpdate = 0;
+
+void RecordTrendData(float pm25) {
+  if (trendCount < TREND_MAX_POINTS) {
+    pm25History[trendCount++] = pm25;
+  } else {
+    for (int i = 0; i < TREND_MAX_POINTS - 1; i++) {
+      pm25History[i] = pm25History[i + 1];
+    }
+    pm25History[TREND_MAX_POINTS - 1] = pm25;
+  }
+}
+} // namespace
 
 unsigned long SystemTimeProvider::getMillis() {
 #ifdef ARDUINO
@@ -42,14 +66,12 @@ void App_ResetState() {
   lastSensorUpdate = 0;
   lastTransitionTime = (unsigned long)-200;
   appTime = nullptr;
+  trendCount = 0;
+  lastTrendUpdate = 0;
+  inFeedback = false;
 }
 
 AppState App_GetState() { return currentState; }
-
-// Feedback state
-static bool inFeedback = false;
-static unsigned long feedbackStartTime = 0;
-static AppState pendingState = APP_STATE_MAIN;
 
 // 輔助函式：繪製按鈕
 static void DrawButton(uint16_t x, uint16_t y, uint16_t w, uint16_t h,
@@ -111,6 +133,90 @@ void DrawMainScreen() {
 
   // Draw Info Button
   DrawButton(BTN_INFO_X, BTN_INFO_Y, BTN_INFO_W, BTN_INFO_H, "INFO", false);
+  // Draw Trend Button
+  DrawButton(BTN_TREND_X, BTN_TREND_Y, BTN_TREND_W, BTN_TREND_H, "Trend",
+             false);
+}
+
+static void DrawTrendChart() {
+  if (trendCount < 2) {
+    GUI_DisString_EN(100, 150, "Waiting for data...", &Font20, LCD_BACKGROUND,
+                     BLACK);
+    return;
+  }
+
+  float minVal = pm25History[0];
+  float maxVal = pm25History[0];
+  for (int i = 1; i < trendCount; i++) {
+    if (pm25History[i] < minVal)
+      minVal = pm25History[i];
+    if (pm25History[i] > maxVal)
+      maxVal = pm25History[i];
+  }
+
+  if (maxVal - minVal < 1.0f) {
+    maxVal = minVal + 5.0f;
+    minVal = minVal - 5.0f;
+    if (minVal < 0)
+      minVal = 0;
+  } else {
+    // Add 10% padding
+    float pad = (maxVal - minVal) * 0.1f;
+    maxVal += pad;
+    minVal -= pad;
+    if (minVal < 0)
+      minVal = 0;
+  }
+
+  float range = maxVal - minVal;
+  const int chartX = 40;
+  const int chartY = 60;
+  const int chartW = 400;
+  const int chartH = 200;
+
+  // Clear chart area
+  GUI_DrawRectangle(chartX, chartY, chartX + chartW, chartY + chartH,
+                    LCD_BACKGROUND, DRAW_FULL, DOT_PIXEL_DFT);
+
+  // Draw axes
+  GUI_DrawLine(chartX, chartY, chartX, chartY + chartH, BLACK, LINE_SOLID,
+               DOT_PIXEL_1X1);
+  GUI_DrawLine(chartX, chartY + chartH, chartX + chartW, chartY + chartH, BLACK,
+               LINE_SOLID, DOT_PIXEL_1X1);
+
+  // Clear label area
+  GUI_DrawRectangle(0, chartY, chartX - 1, chartY + chartH, LCD_BACKGROUND,
+                    DRAW_FULL, DOT_PIXEL_DFT);
+
+  // Draw Y-axis labels
+  char label[32];
+  snprintf(label, sizeof(label), "%.0f", maxVal);
+  GUI_DisString_EN(5, chartY, label, &Font12, LCD_BACKGROUND, BLACK);
+  snprintf(label, sizeof(label), "%.0f", minVal);
+  GUI_DisString_EN(5, chartY + chartH - 12, label, &Font12, LCD_BACKGROUND,
+                   BLACK);
+
+  // Draw data lines
+  for (int i = 0; i < trendCount - 1; i++) {
+    int x1 = chartX + i;
+    int y1 =
+        chartY + chartH - (int)((pm25History[i] - minVal) / range * chartH);
+    int x2 = chartX + i + 1;
+    int y2 =
+        chartY + chartH - (int)((pm25History[i + 1] - minVal) / range * chartH);
+    GUI_DrawLine(x1, y1, x2, y2, RED, LINE_SOLID, DOT_PIXEL_1X1);
+  }
+}
+
+void DrawTrendScreen() {
+  LCD_Clear(LCD_BACKGROUND);
+  GUI_DisString_EN(10, 10, "PM 2.5 Trend", &Font24, LCD_BACKGROUND, BLUE);
+  GUI_DrawLine(0, 40, 480, 40, BLUE, LINE_SOLID, DOT_PIXEL_2X2);
+
+  // Draw Back Button
+  DrawButton(BTN_BACK_X, BTN_BACK_Y, BTN_BACK_W, BTN_BACK_H, "BACK", false);
+
+  DrawTrendChart();
 }
 
 void DrawInfoScreen() {
@@ -131,6 +237,9 @@ void DrawInfoScreen() {
 }
 
 void App_Setup(SensorIntf *sen5x, TimeProvider *timeProvider) {
+  // Reset state to ensure clean start (especially important for tests)
+  App_ResetState();
+
   // Store the time provider
   appTime = timeProvider;
 
@@ -233,7 +342,17 @@ void App_Loop(SensorIntf *sen5x) {
           DrawButton(BTN_INFO_X, BTN_INFO_Y, BTN_INFO_W, BTN_INFO_H, "INFO",
                      true);
         }
-      } else if (currentState == APP_STATE_INFO) {
+        // Check Trend Button
+        else if (x >= BTN_TREND_X && x <= BTN_TREND_X + BTN_TREND_W &&
+                 y >= BTN_TREND_Y && y <= BTN_TREND_Y + BTN_TREND_H) {
+          inFeedback = true;
+          feedbackStartTime = currentMillis;
+          pendingState = APP_STATE_TREND;
+          DrawButton(BTN_TREND_X, BTN_TREND_Y, BTN_TREND_W, BTN_TREND_H,
+                     "Trend", true);
+        }
+      } else if (currentState == APP_STATE_INFO ||
+                 currentState == APP_STATE_TREND) {
         // Check Back Button
         if (x >= BTN_BACK_X && x <= BTN_BACK_X + BTN_BACK_W &&
             y >= BTN_BACK_Y && y <= BTN_BACK_Y + BTN_BACK_H) {
@@ -253,21 +372,20 @@ void App_Loop(SensorIntf *sen5x) {
     currentState = pendingState;
     if (currentState == APP_STATE_MAIN) {
       DrawMainScreen();
-    } else {
+    } else if (currentState == APP_STATE_INFO) {
       DrawInfoScreen();
+    } else if (currentState == APP_STATE_TREND) {
+      DrawTrendScreen();
     }
     lastTransitionTime = currentMillis;
   }
 
-  // --- Update Sensor Data (Only in MAIN State, Every 1000ms) ---
-
-  if (currentState == APP_STATE_MAIN &&
-      (currentMillis - lastSensorUpdate >= 1000)) {
+  // --- Update Sensor Data (Every 1000ms) ---
+  if (currentMillis - lastSensorUpdate >= 1000) {
     lastSensorUpdate = currentMillis;
     uint16_t error;
     char errorMessage[256];
 
-    // 讀取測量值
     float massConcentrationPm1p0;
     float massConcentrationPm2p5;
     float massConcentrationPm4p0;
@@ -292,43 +410,55 @@ void App_Loop(SensorIntf *sen5x) {
 #else
       printf("Read Error: %s\n", errorMessage);
 #endif
-      GUI_DisString_EN(10, 300, "Read Error...", &Font16, LCD_BACKGROUND, RED);
+      if (currentState == APP_STATE_MAIN) {
+        GUI_DisString_EN(10, 300, "Read Error...", &Font16, LCD_BACKGROUND,
+                         RED);
+      }
     } else {
-      // 如果讀取成功，更新 LCD 顯示
-
-      // --- PM 數值 ---
-      // PM 1.0
-      displayValue(10, 60, "PM 1.0:", massConcentrationPm1p0, " ug/m3", BLACK);
-      // PM 2.5 (使用紅色強調)
-      displayValue(10, 90, "PM 2.5:", massConcentrationPm2p5, " ug/m3", RED);
-      // PM 4.0
-      displayValue(10, 120, "PM 4.0:", massConcentrationPm4p0, " ug/m3", BLACK);
-      // PM 10.0
-      displayValue(10, 150, "PM 10 :", massConcentrationPm10p0, " ug/m3",
-                   BLACK);
-
-      // --- 環境數值 ---
-      // 溫度
-      displayValue(10, 180, "Temp  :", ambientTemperature, " C", BLUE);
-      // 濕度
-      displayValue(10, 210, "Humid :", ambientHumidity, " %", BLUE);
-
-      // --- 氣體指數 ---
-      // VOC
-      // 處理 NaN 狀況 (感測器預熱時可能是 NaN)
-      if (isnan(vocIndex)) {
-        GUI_DisString_EN(10, 240, "VOC Idx:   n/a", &Font20, LCD_BACKGROUND,
-                         BLACK);
-      } else {
-        displayValue(10, 240, "VOC Idx:", vocIndex, "", MAGENTA);
+      // Record Trend Data every 10s
+      if (currentMillis - lastTrendUpdate >= 10000) {
+        lastTrendUpdate = currentMillis;
+        RecordTrendData(massConcentrationPm2p5);
       }
 
-      // NOx
-      if (isnan(noxIndex)) {
-        GUI_DisString_EN(10, 270, "NOx Idx:   n/a", &Font20, LCD_BACKGROUND,
-                         BLACK);
-      } else {
-        displayValue(10, 270, "NOx Idx:", noxIndex, "", MAGENTA);
+      // Update UI if in MAIN state
+      if (currentState == APP_STATE_MAIN) {
+        // PM 1.0
+        displayValue(10, 60, "PM 1.0:", massConcentrationPm1p0, " ug/m3",
+                     BLACK);
+        // PM 2.5 (使用紅色強調)
+        displayValue(10, 90, "PM 2.5:", massConcentrationPm2p5, " ug/m3", RED);
+        // PM 4.0
+        displayValue(10, 120, "PM 4.0:", massConcentrationPm4p0, " ug/m3",
+                     BLACK);
+        // PM 10.0
+        displayValue(10, 150, "PM 10 :", massConcentrationPm10p0, " ug/m3",
+                     BLACK);
+
+        // --- 環境數值 ---
+        displayValue(10, 180, "Temp  :", ambientTemperature, " C", BLUE);
+        displayValue(10, 210, "Humid :", ambientHumidity, " %", BLUE);
+
+        // --- 氣體指數 ---
+        if (isnan(vocIndex)) {
+          GUI_DisString_EN(10, 240, "VOC Idx:   n/a", &Font20, LCD_BACKGROUND,
+                           BLACK);
+        } else {
+          displayValue(10, 240, "VOC Idx:", vocIndex, "", MAGENTA);
+        }
+
+        if (isnan(noxIndex)) {
+          GUI_DisString_EN(10, 270, "NOx Idx:   n/a", &Font20, LCD_BACKGROUND,
+                           BLACK);
+        } else {
+          displayValue(10, 270, "NOx Idx:", noxIndex, "", MAGENTA);
+        }
+      }
+
+      // If in TREND state, redraw chart if it was just updated
+      if (currentState == APP_STATE_TREND &&
+          (currentMillis - lastTrendUpdate < 100)) {
+        DrawTrendChart();
       }
     }
   } else {
