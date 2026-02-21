@@ -183,9 +183,9 @@ TEST_F(DisplayIntegrationTest, CheckpointButtonFeedback) {
 
   // 1. Press INFO button (Coordinate defined in App.h)
   // We use the coordinate relative to the button
-  SDL_SetMouseState(400 + 5, 10 + 5, true);
+  SDL_SetMouseState(btnInfo.x + 5, btnInfo.y + 5, true);
   engine.stepFrames(1); // Detect press, enter feedback
-  SDL_SetMouseState(400 + 5, 10 + 5, false);
+  SDL_SetMouseState(btnInfo.x + 5, btnInfo.y + 5, false);
 
   // Advance 50ms (feedback window is 100ms)
   timeProvider.advance(50);
@@ -244,10 +244,10 @@ TEST_F(DisplayIntegrationTest, CheckpointChart) {
     engine.stepFrames(1);        // App_Loop should record trend data
   }
 
-  // 2. Press TREND button (Coordinates 320, 10, W=75, H=30)
-  SDL_SetMouseState(320 + 5, 10 + 5, true);
+  // 2. Press TREND button (Coordinates btnTrend.x, btnTrend.y, W=75, H=30)
+  SDL_SetMouseState(btnTrend.x + 5, btnTrend.y + 5, true);
   engine.stepFrames(1); // Detect press, enter feedback
-  SDL_SetMouseState(320 + 5, 10 + 5, false);
+  SDL_SetMouseState(btnTrend.x + 5, btnTrend.y + 5, false);
 
   // 3. Advance past feedback (100ms)
   timeProvider.advance(150);
@@ -289,9 +289,9 @@ TEST_F(DisplayIntegrationTest, CheckpointYAxisStability) {
   }
 
   // Go to Trend Screen
-  SDL_SetMouseState(BTN_TREND_X + 5, BTN_TREND_Y + 5, true);
+  SDL_SetMouseState(btnTrend.x + 5, btnTrend.y + 5, true);
   engine.stepFrames(1);
-  SDL_SetMouseState(BTN_TREND_X + 5, BTN_TREND_Y + 5, false);
+  SDL_SetMouseState(btnTrend.x + 5, btnTrend.y + 5, false);
   timeProvider.advance(150);
   engine.stepFrames(1);
 
