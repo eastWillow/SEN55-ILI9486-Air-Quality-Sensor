@@ -24,6 +24,8 @@ I want to propse a workflow that can handle the embedded c++project.
 
 The main goal of this project is to create a display emulator for the SEN55 air quality sensor using the ILI9486 driver.
 
+Arduino Requirement :Arduino Mega 2560
+
 ## My Company with AI Agent Workflow
 
 ```mermaid

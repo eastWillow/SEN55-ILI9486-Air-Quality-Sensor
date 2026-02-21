@@ -26,4 +26,4 @@ jobs:
 
       - name: Compile sketch
         run: |
-          arduino-cli compile --fqbn arduino:avr:uno SEN55-ILI9486-Air-Quality-Sensor.ino
+          arduino-cli compile --fqbn arduino:avr:mega SEN55-ILI9486-Air-Quality-Sensor.ino
