@@ -42,6 +42,23 @@ void RecordTrendData(float pm25) {
     pm25History[TREND_MAX_POINTS - 1] = pm25;
   }
 }
+
+void App_Log(const char *message) {
+#ifdef ARDUINO
+  Serial.println(message);
+#else
+  printf("%s\n", message);
+#endif
+}
+
+void App_LogError(const char *context, const char *errorMsg) {
+#ifdef ARDUINO
+  Serial.print(context);
+  Serial.println(errorMsg);
+#else
+  printf("%s%s\n", context, errorMsg);
+#endif
+}
 } // namespace
 
 unsigned long SystemTimeProvider::getMillis() {
@@ -246,33 +263,20 @@ void App_Setup(SensorIntf *sen5x, TimeProvider *timeProvider) {
   // 1. 初始化 LCD 底層系統 (包含 Serial)
   System_Init();
 
-#ifdef ARDUINO
-  Serial.println("SEN55 Air Quality LCD Demo");
-  Serial.println("LCD Init...");
-#else
-  printf("SEN55 Air Quality LCD Demo\n");
-  printf("LCD Init...\n");
-#endif
+  App_Log("SEN55 Air Quality LCD Demo");
+  App_Log("LCD Init...");
 
   // 2. 初始化 LCD
   LCD_SCAN_DIR Lcd_ScanDir = SCAN_DIR_DFT;
   LCD_Init(Lcd_ScanDir, 100);
   TP_Init(Lcd_ScanDir);
 
-#ifdef ARDUINO
-  Serial.println("LCD Clear...");
-#else
-  printf("LCD Clear...\n");
-#endif
+  App_Log("LCD Clear...");
 
   DrawMainScreen();
 
   // 3. 初始化 SEN55
-#ifdef ARDUINO
-  Serial.println("Sensirion Init...");
-#else
-  printf("Sensirion Init...\n");
-#endif
+  App_Log("Sensirion Init...");
 
   // Note: Wire.begin() is handled inside SensorReal::begin() for Arduino
   // For PC, SensorMock::begin() does nothing.
@@ -282,15 +286,8 @@ void App_Setup(SensorIntf *sen5x, TimeProvider *timeProvider) {
 
   error = sen5x->deviceReset();
   if (error) {
-#ifdef ARDUINO
-    Serial.print("Device Reset Error: ");
-#endif
     sen5x->errorToString(error, errorMessage, 256);
-#ifdef ARDUINO
-    Serial.println(errorMessage);
-#else
-    printf("Device Reset Error: %s\n", errorMessage);
-#endif
+    App_LogError("Device Reset Error: ", errorMessage);
     GUI_DisString_EN(10, 60, "Sensor Reset Error", &Font20, LCD_BACKGROUND,
                      RED);
   }
@@ -302,15 +299,8 @@ void App_Setup(SensorIntf *sen5x, TimeProvider *timeProvider) {
   // 開始測量
   error = sen5x->startMeasurement();
   if (error) {
-#ifdef ARDUINO
-    Serial.print("Start Measurement Error: ");
-#endif
     sen5x->errorToString(error, errorMessage, 256);
-#ifdef ARDUINO
-    Serial.println(errorMessage);
-#else
-    printf("Start Measurement Error: %s\n", errorMessage);
-#endif
+    App_LogError("Start Measurement Error: ", errorMessage);
     GUI_DisString_EN(10, 90, "Start Error", &Font20, LCD_BACKGROUND, RED);
   }
 }
@@ -401,15 +391,8 @@ void App_Loop(SensorIntf *sen5x) {
         noxIndex);
 
     if (error) {
-#ifdef ARDUINO
-      Serial.print("Read Error: ");
-#endif
       sen5x->errorToString(error, errorMessage, 256);
-#ifdef ARDUINO
-      Serial.println(errorMessage);
-#else
-      printf("Read Error: %s\n", errorMessage);
-#endif
+      App_LogError("Read Error: ", errorMessage);
       if (currentState == APP_STATE_MAIN) {
         GUI_DisString_EN(10, 300, "Read Error...", &Font16, LCD_BACKGROUND,
                          RED);
