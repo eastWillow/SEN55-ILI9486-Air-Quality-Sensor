@@ -22,6 +22,7 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
         set(LIB_SOURCES
             ${PROJECT_ROOT}/src/App/App.cpp
             ${PROJECT_ROOT}/src/App/EmulatorEngine.cpp
+            ${PROJECT_ROOT}/src/App/Log.cpp
             ${PROJECT_ROOT}/src/Sensor/SensorMock.cpp
             ${PROJECT_ROOT}/src/Display/LCD_Driver_SDL.cpp
             ${PROJECT_ROOT}/src/Display/LCD_GUI.cpp

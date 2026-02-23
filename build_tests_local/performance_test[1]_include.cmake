@@ -1,0 +1,5 @@
+if(EXISTS "/app/build_tests_local/performance_test[1]_tests.cmake")
+  include("/app/build_tests_local/performance_test[1]_tests.cmake")
+else()
+  add_test(performance_test_NOT_BUILT performance_test_NOT_BUILT)
+endif()

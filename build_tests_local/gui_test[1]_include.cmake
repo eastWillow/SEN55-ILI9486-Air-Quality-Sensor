@@ -1,0 +1,5 @@
+if(EXISTS "/app/build_tests_local/gui_test[1]_tests.cmake")
+  include("/app/build_tests_local/gui_test[1]_tests.cmake")
+else()
+  add_test(gui_test_NOT_BUILT gui_test_NOT_BUILT)
+endif()

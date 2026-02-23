@@ -1,0 +1,5 @@
+if(EXISTS "/app/build_tests_local/emulator_test[1]_tests.cmake")
+  include("/app/build_tests_local/emulator_test[1]_tests.cmake")
+else()
+  add_test(emulator_test_NOT_BUILT emulator_test_NOT_BUILT)
+endif()

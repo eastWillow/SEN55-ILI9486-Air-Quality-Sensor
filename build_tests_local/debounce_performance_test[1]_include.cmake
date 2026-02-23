@@ -1,0 +1,5 @@
+if(EXISTS "/app/build_tests_local/debounce_performance_test[1]_tests.cmake")
+  include("/app/build_tests_local/debounce_performance_test[1]_tests.cmake")
+else()
+  add_test(debounce_performance_test_NOT_BUILT debounce_performance_test_NOT_BUILT)
+endif()

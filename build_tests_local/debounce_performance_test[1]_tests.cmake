@@ -1,0 +1,5 @@
+add_test([=[DebouncePerformanceTest.NonBlockingDebounce]=]  /app/build_tests_local/debounce_performance_test [==[--gtest_filter=DebouncePerformanceTest.NonBlockingDebounce]==] --gtest_also_run_disabled_tests)
+set_tests_properties([=[DebouncePerformanceTest.NonBlockingDebounce]=]  PROPERTIES WORKING_DIRECTORY /app/build_tests_local SKIP_REGULAR_EXPRESSION [==[\[  SKIPPED \]]==])
+add_test([=[DebouncePerformanceTest.ClockRollover]=]  /app/build_tests_local/debounce_performance_test [==[--gtest_filter=DebouncePerformanceTest.ClockRollover]==] --gtest_also_run_disabled_tests)
+set_tests_properties([=[DebouncePerformanceTest.ClockRollover]=]  PROPERTIES WORKING_DIRECTORY /app/build_tests_local SKIP_REGULAR_EXPRESSION [==[\[  SKIPPED \]]==])
+set(  debounce_performance_test_TESTS DebouncePerformanceTest.NonBlockingDebounce DebouncePerformanceTest.ClockRollover)

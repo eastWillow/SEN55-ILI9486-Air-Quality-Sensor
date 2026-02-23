@@ -1,0 +1,5 @@
+if(EXISTS "/app/build_tests_local/display_integration_test[1]_tests.cmake")
+  include("/app/build_tests_local/display_integration_test[1]_tests.cmake")
+else()
+  add_test(display_integration_test_NOT_BUILT display_integration_test_NOT_BUILT)
+endif()
