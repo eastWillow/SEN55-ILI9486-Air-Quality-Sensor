@@ -20,6 +20,7 @@ endif()
 set(LIB_SOURCES
     src/App/App.cpp
     src/App/EmulatorEngine.cpp
+    src/App/Log.cpp
     src/Sensor/SensorMock.cpp
     src/Display/LCD_Driver_SDL.cpp
     src/Display/LCD_GUI.cpp
