@@ -1,5 +1,8 @@
 #include "SDL.h"
 #include <stdio.h>
+#include <stdlib.h>
+
+bool g_SDL_FailSurfaceCreation = false;
 
 extern "C" {
 int SDL_Init(uint32_t flags) { return 0; }
@@ -17,8 +20,17 @@ void SDL_DestroyWindow(SDL_Window* window) {}
 void SDL_Quit(void) {}
 int SDL_PollEvent(SDL_Event* event) { return 0; }
 void SDL_Delay(uint32_t ms) {}
-SDL_Surface* SDL_CreateRGBSurfaceWithFormatFrom(void* pixels, int width, int height, int depth, int pitch, uint32_t format) { return (SDL_Surface*)1; }
+SDL_Surface* SDL_CreateRGBSurfaceWithFormatFrom(void* pixels, int width, int height, int depth, int pitch, uint32_t format) {
+    if (g_SDL_FailSurfaceCreation) {
+        return NULL;
+    }
+    return (SDL_Surface*)1;
+}
 int SDL_SaveBMP(SDL_Surface* surface, const char* file) {
+    if (surface == NULL) {
+        fprintf(stderr, "Mock SDL_SaveBMP: Surface is NULL! Simulating crash.\n");
+        abort();
+    }
     printf("Mock SDL_SaveBMP to %s\n", file);
     // Create a dummy file
     FILE* f = fopen(file, "w");
