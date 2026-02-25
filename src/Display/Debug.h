@@ -28,10 +28,11 @@
 	#define DEBUG(__info)
 #endif
 #else
+#include <iostream>
 #include <stdio.h>
 #define DEV_DEBUG 0
 #if DEV_DEBUG
-    #define DEBUG(__info) printf(__info)
+    #define DEBUG(__info) std::cout << __info
 #else
     #define DEBUG(__info)
 #endif
