@@ -49,10 +49,10 @@ TEST_F(CoreLibTest, InteractionTransitions) {
   // Initial state should be MAIN
   EXPECT_EQ(App_GetState(), APP_STATE_MAIN);
 
-  // 1. Click INFO button (BTN_INFO_X, BTN_INFO_Y)
-  SDL_SetMouseState(BTN_INFO_X + 5, BTN_INFO_Y + 5, true);
+  // 1. Click INFO button (btnInfo.x, btnInfo.y)
+  SDL_SetMouseState(btnInfo.x + 5, btnInfo.y + 5, true);
   App_Loop(&sensor); // Detect press, enter feedback
-  SDL_SetMouseState(BTN_INFO_X + 5, BTN_INFO_Y + 5, false);
+  SDL_SetMouseState(btnInfo.x + 5, btnInfo.y + 5, false);
 
   // State should still be MAIN during feedback
   EXPECT_EQ(App_GetState(), APP_STATE_MAIN);
@@ -67,10 +67,10 @@ TEST_F(CoreLibTest, InteractionTransitions) {
   // Explicitly advance time past the 200ms debounce threshold
   timeProvider.advance(250);
 
-  // 2. Click BACK button (BTN_BACK_X, BTN_BACK_Y)
-  SDL_SetMouseState(BTN_BACK_X + 5, BTN_BACK_Y + 5, true);
+  // 2. Click BACK button (btnBack.x, btnBack.y)
+  SDL_SetMouseState(btnBack.x + 5, btnBack.y + 5, true);
   App_Loop(&sensor); // Detect press, enter feedback
-  SDL_SetMouseState(BTN_BACK_X + 5, BTN_BACK_Y + 5, false);
+  SDL_SetMouseState(btnBack.x + 5, btnBack.y + 5, false);
 
   // State should still be INFO during feedback
   EXPECT_EQ(App_GetState(), APP_STATE_INFO);
