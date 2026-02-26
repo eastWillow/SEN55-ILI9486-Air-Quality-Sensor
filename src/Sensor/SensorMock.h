@@ -8,6 +8,7 @@
 
 #ifndef ARDUINO
 #include <cmath>
+#include <random>
 #endif
 
 class SensorMock : public SensorIntf {
@@ -29,9 +30,18 @@ public:
   void setFixedValue(float pm1, float pm25, float pm4, float pm10, float hum,
                      float temp, float voc, float nox);
 
+#ifndef ARDUINO
+  SensorMock();
+  void setSeed(uint32_t seed);
+#endif
+
 private:
   bool m_useFixed = false;
   float m_fPm1, m_fPm25, m_fPm4, m_fPm10, m_fHum, m_fTemp, m_fVoc, m_fNox;
+
+#ifndef ARDUINO
+  std::mt19937 m_gen;
+#endif
 };
 
 #endif
