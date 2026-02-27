@@ -5,6 +5,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+SensorMock::SensorMock() : m_gen(1) {}
+
+void SensorMock::setSeed(uint32_t seed) { m_gen.seed(seed); }
+
 uint16_t SensorMock::begin() { return 0; }
 
 uint16_t SensorMock::startMeasurement() { return 0; }
@@ -27,15 +31,20 @@ uint16_t SensorMock::readMeasuredValues(float &massConcentrationPm1p0,
     vocIndex = m_fVoc;
     noxIndex = m_fNox;
   } else {
-    // Return random dummy values
-    massConcentrationPm1p0 = (float)(rand() % 50);
-    massConcentrationPm2p5 = (float)(rand() % 50);
-    massConcentrationPm4p0 = (float)(rand() % 50);
-    massConcentrationPm10p0 = (float)(rand() % 50);
-    ambientHumidity = 40.0f + (float)(rand() % 20);
-    ambientTemperature = 20.0f + (float)(rand() % 10);
-    vocIndex = (float)(rand() % 500);
-    noxIndex = (float)(rand() % 500);
+    // Use secure PRNG instead of rand()
+    std::uniform_real_distribution<float> pmDist(0.0f, 50.0f);
+    std::uniform_real_distribution<float> humDist(40.0f, 60.0f);
+    std::uniform_real_distribution<float> tempDist(20.0f, 30.0f);
+    std::uniform_real_distribution<float> indexDist(0.0f, 500.0f);
+
+    massConcentrationPm1p0 = pmDist(m_gen);
+    massConcentrationPm2p5 = pmDist(m_gen);
+    massConcentrationPm4p0 = pmDist(m_gen);
+    massConcentrationPm10p0 = pmDist(m_gen);
+    ambientHumidity = humDist(m_gen);
+    ambientTemperature = tempDist(m_gen);
+    vocIndex = indexDist(m_gen);
+    noxIndex = indexDist(m_gen);
   }
 
   return 0;
