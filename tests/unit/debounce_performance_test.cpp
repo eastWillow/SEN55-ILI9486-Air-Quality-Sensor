@@ -33,8 +33,8 @@ TEST_F(DebouncePerformanceTest, NonBlockingDebounce) {
   // Initial state should be MAIN
   EXPECT_EQ(App_GetState(), APP_STATE_MAIN);
 
-  // 1. Click INFO button (BTN_INFO_X, BTN_INFO_Y)
-  SDL_SetMouseState(BTN_INFO_X + 5, BTN_INFO_Y + 5, true);
+  // 1. Click INFO button (btnInfo.x, btnInfo.y)
+  SDL_SetMouseState(btnInfo.x + 5, btnInfo.y + 5, true);
 
   // Measure how many mockMillis pass during App_Loop
   unsigned long startMillis = timeProvider.getMillis();
@@ -53,11 +53,11 @@ TEST_F(DebouncePerformanceTest, NonBlockingDebounce) {
   EXPECT_LE(elapsed, 100)
       << "App_Loop blocked too long, potentially still using delay";
 
-  SDL_SetMouseState(BTN_INFO_X + 5, BTN_INFO_Y + 5, false);
+  SDL_SetMouseState(btnInfo.x + 5, btnInfo.y + 5, false);
   App_Loop(&sensor);
 
   // 2. Click BACK button immediately (debounce active)
-  SDL_SetMouseState(BTN_BACK_X + 5, BTN_BACK_Y + 5, true);
+  SDL_SetMouseState(btnBack.x + 5, btnBack.y + 5, true);
   App_Loop(&sensor); // This should be ignored due to debounce
 
   EXPECT_EQ(App_GetState(), APP_STATE_INFO)
@@ -91,7 +91,7 @@ TEST_F(DebouncePerformanceTest, ClockRollover) {
   timeProvider.advance(200);
 
   // 1. Click INFO button
-  SDL_SetMouseState(BTN_INFO_X + 5, BTN_INFO_Y + 5, true);
+  SDL_SetMouseState(btnInfo.x + 5, btnInfo.y + 5, true);
   App_Loop(&sensor); // Starts feedback
 
   // Advance to complete feedback
@@ -115,7 +115,7 @@ TEST_F(DebouncePerformanceTest, ClockRollover) {
   // Total added: ~ 250ms
 
   // 2. Click BACK button and verify it transitions
-  SDL_SetMouseState(BTN_BACK_X + 5, BTN_BACK_Y + 5, true);
+  SDL_SetMouseState(btnBack.x + 5, btnBack.y + 5, true);
   App_Loop(&sensor); // Starts feedback
 
   timeProvider.advance(150);

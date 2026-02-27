@@ -14,6 +14,10 @@
 using namespace std;
 #endif
 
+const Button btnInfo = {400, 10, 70, 30, "INFO"};
+const Button btnTrend = {320, 10, 75, 30, "Trend"};
+const Button btnBack = {10, 280, 70, 30, "BACK"};
+
 namespace {
 // Application State
 AppState currentState = APP_STATE_MAIN;
@@ -74,17 +78,16 @@ void App_ResetState() {
 AppState App_GetState() { return currentState; }
 
 // 輔助函式：繪製按鈕
-static void DrawButton(uint16_t x, uint16_t y, uint16_t w, uint16_t h,
-                       const char *label, bool inverted) {
+static void DrawButton(const Button& btn, bool inverted) {
   if (inverted) {
     // Feedback mode: Invert colors and fill background
-    GUI_DrawRectangle(x, y, x + w, y + h, BLUE, DRAW_FULL, DOT_PIXEL_DFT);
-    GUI_DisString_EN(x + 10, y + 8, label, &Font16, BLUE, LCD_BACKGROUND);
+    GUI_DrawRectangle(btn.x, btn.y, btn.x + btn.w, btn.y + btn.h, BLUE, DRAW_FULL, DOT_PIXEL_DFT);
+    GUI_DisString_EN(btn.x + 10, btn.y + 8, btn.label, &Font16, BLUE, LCD_BACKGROUND);
   } else {
     // Normal mode: Standard border and text, no explicit background fill inside
     // border to perfectly match original golden samples.
-    GUI_DrawRectangle(x, y, x + w, y + h, BLUE, DRAW_EMPTY, DOT_PIXEL_DFT);
-    GUI_DisString_EN(x + 10, y + 8, label, &Font16, LCD_BACKGROUND, BLUE);
+    GUI_DrawRectangle(btn.x, btn.y, btn.x + btn.w, btn.y + btn.h, BLUE, DRAW_EMPTY, DOT_PIXEL_DFT);
+    GUI_DisString_EN(btn.x + 10, btn.y + 8, btn.label, &Font16, LCD_BACKGROUND, BLUE);
   }
 }
 
@@ -132,10 +135,9 @@ void DrawMainScreen() {
   GUI_DrawLine(0, 40, 480, 40, BLUE, LINE_SOLID, DOT_PIXEL_2X2);
 
   // Draw Info Button
-  DrawButton(BTN_INFO_X, BTN_INFO_Y, BTN_INFO_W, BTN_INFO_H, "INFO", false);
+  DrawButton(btnInfo, false);
   // Draw Trend Button
-  DrawButton(BTN_TREND_X, BTN_TREND_Y, BTN_TREND_W, BTN_TREND_H, "Trend",
-             false);
+  DrawButton(btnTrend, false);
 }
 
 static void DrawTrendChart() {
@@ -214,7 +216,7 @@ void DrawTrendScreen() {
   GUI_DrawLine(0, 40, 480, 40, BLUE, LINE_SOLID, DOT_PIXEL_2X2);
 
   // Draw Back Button
-  DrawButton(BTN_BACK_X, BTN_BACK_Y, BTN_BACK_W, BTN_BACK_H, "BACK", false);
+  DrawButton(btnBack, false);
 
   DrawTrendChart();
 }
@@ -233,7 +235,7 @@ void DrawInfoScreen() {
   GUI_DisString_EN(10, 140, "MIT License", &Font16, LCD_BACKGROUND, BLACK);
 
   // Draw Back Button
-  DrawButton(BTN_BACK_X, BTN_BACK_Y, BTN_BACK_W, BTN_BACK_H, "BACK", false);
+  DrawButton(btnBack, false);
 }
 
 void App_Setup(SensorIntf *sen5x, TimeProvider *timeProvider) {
@@ -334,33 +336,27 @@ void App_Loop(SensorIntf *sen5x) {
     if (currentMillis - lastTransitionTime >= 200 && !inFeedback) {
       if (currentState == APP_STATE_MAIN) {
         // Check Info Button
-        if (x >= BTN_INFO_X && x <= BTN_INFO_X + BTN_INFO_W &&
-            y >= BTN_INFO_Y && y <= BTN_INFO_Y + BTN_INFO_H) {
+        if (btnInfo.contains(x, y)) {
           inFeedback = true;
           feedbackStartTime = currentMillis;
           pendingState = APP_STATE_INFO;
-          DrawButton(BTN_INFO_X, BTN_INFO_Y, BTN_INFO_W, BTN_INFO_H, "INFO",
-                     true);
+          DrawButton(btnInfo, true);
         }
         // Check Trend Button
-        else if (x >= BTN_TREND_X && x <= BTN_TREND_X + BTN_TREND_W &&
-                 y >= BTN_TREND_Y && y <= BTN_TREND_Y + BTN_TREND_H) {
+        else if (btnTrend.contains(x, y)) {
           inFeedback = true;
           feedbackStartTime = currentMillis;
           pendingState = APP_STATE_TREND;
-          DrawButton(BTN_TREND_X, BTN_TREND_Y, BTN_TREND_W, BTN_TREND_H,
-                     "Trend", true);
+          DrawButton(btnTrend, true);
         }
       } else if (currentState == APP_STATE_INFO ||
                  currentState == APP_STATE_TREND) {
         // Check Back Button
-        if (x >= BTN_BACK_X && x <= BTN_BACK_X + BTN_BACK_W &&
-            y >= BTN_BACK_Y && y <= BTN_BACK_Y + BTN_BACK_H) {
+        if (btnBack.contains(x, y)) {
           inFeedback = true;
           feedbackStartTime = currentMillis;
           pendingState = APP_STATE_MAIN;
-          DrawButton(BTN_BACK_X, BTN_BACK_Y, BTN_BACK_W, BTN_BACK_H, "BACK",
-                     true);
+          DrawButton(btnBack, true);
         }
       }
     }
