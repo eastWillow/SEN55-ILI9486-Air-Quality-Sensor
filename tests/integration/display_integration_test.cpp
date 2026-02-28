@@ -289,9 +289,9 @@ TEST_F(DisplayIntegrationTest, CheckpointYAxisStability) {
   }
 
   // Go to Trend Screen
-  SDL_SetMouseState(BTN_TREND_X + 5, BTN_TREND_Y + 5, true);
+  SDL_SetMouseState(btnTrend.x + 5, btnTrend.y + 5, true);
   engine.stepFrames(1);
-  SDL_SetMouseState(BTN_TREND_X + 5, BTN_TREND_Y + 5, false);
+  SDL_SetMouseState(btnTrend.x + 5, btnTrend.y + 5, false);
   timeProvider.advance(150);
   engine.stepFrames(1);
 
