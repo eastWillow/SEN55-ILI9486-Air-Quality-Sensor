@@ -2,6 +2,9 @@
 #ifndef SDL_H
 #define SDL_H
 
+#define SDL_IS_STUB 1
+extern bool g_SDL_FailSurfaceCreation;
+
 #include <stdint.h>
 
 #define SDL_INIT_VIDEO 0

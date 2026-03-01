@@ -135,7 +135,13 @@ void LCD_Quit() {
 // Screenshot function for PC
 void LCD_SaveScreenshot(const char* filename) {
     SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormatFrom(frameBuffer, WINDOW_WIDTH, WINDOW_HEIGHT, 16, WINDOW_WIDTH * 2, SDL_PIXELFORMAT_RGB565);
-    SDL_SaveBMP(surface, filename);
+    if (surface == NULL) {
+        fprintf(stderr, "Screenshot error: Failed to create surface: %s\n", SDL_GetError());
+        return;
+    }
+    if (SDL_SaveBMP(surface, filename) != 0) {
+        fprintf(stderr, "Screenshot error: Failed to save BMP to %s: %s\n", filename, SDL_GetError());
+    }
     SDL_FreeSurface(surface);
 }
 

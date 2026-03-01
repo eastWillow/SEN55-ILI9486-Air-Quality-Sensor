@@ -1,3 +1,4 @@
+#include <SDL2/SDL.h>
 #include <cmath>
 #include <gtest/gtest.h>
 
@@ -132,6 +133,25 @@ TEST_F(CoreLibTest, AppSetupExecutes) {
   // App_Setup should not crash when called with valid sensor
   EXPECT_NO_THROW({ App_Setup(&sensor, &timeProvider); })
       << "App_Setup threw exception or crashed";
+}
+
+/**
+ * Test: Screenshot Handles Surface Creation Failure
+ * Validates that LCD_SaveScreenshot handles SDL failure gracefully.
+ */
+TEST_F(CoreLibTest, ScreenshotHandlesSurfaceCreationFailure) {
+#ifdef SDL_IS_STUB
+  g_SDL_FailSurfaceCreation = true;
+
+  // Should not crash even if surface creation fails
+  EXPECT_NO_THROW({ LCD_SaveScreenshot("test_fail.bmp"); });
+
+  // Cleanup
+  g_SDL_FailSurfaceCreation = false;
+#else
+  // Skip test if not using stub
+  SUCCEED();
+#endif
 }
 
 int main(int argc, char **argv) {
