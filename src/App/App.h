@@ -6,21 +6,20 @@
 // Define App States
 enum AppState { APP_STATE_MAIN, APP_STATE_INFO, APP_STATE_TREND };
 
-// Button Coordinates
-#define BTN_INFO_X 400
-#define BTN_INFO_Y 10
-#define BTN_INFO_W 70
-#define BTN_INFO_H 30
+// UI Button Structure
+struct Button {
+  uint16_t x, y, w, h;
+  const char *label;
 
-#define BTN_TREND_X 320
-#define BTN_TREND_Y 10
-#define BTN_TREND_W 75
-#define BTN_TREND_H 30
+  bool contains(uint16_t test_x, uint16_t test_y) const {
+    return (test_x >= x && test_x <= x + w && test_y >= y && test_y <= y + h);
+  }
+};
 
-#define BTN_BACK_X 10
-#define BTN_BACK_Y 280
-#define BTN_BACK_W 70
-#define BTN_BACK_H 30
+// Global Button Definitions
+extern const Button btnInfo;
+extern const Button btnTrend;
+extern const Button btnBack;
 
 class TimeProvider {
 public:
