@@ -74,6 +74,7 @@ int main(int argc, char *argv[]) {
 
   if (testMode) {
     srand(1);                 // Seed RNG for deterministic behavior
+    mockSensor.setSeed(1);    // Seed Mock Sensor PRNG
     System_SetFastMode(true); // Disable delays
   }
 
