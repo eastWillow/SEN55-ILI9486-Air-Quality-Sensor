@@ -19,23 +19,18 @@
 #ifndef __DEBUG_H
 #define __DEBUG_H
 
-#ifdef ARDUINO
-#include <Wire.h>
 #define DEV_DEBUG 0
+
 #if DEV_DEBUG
-	#define DEBUG(__info) Serial.print(__info)
-#else
-	#define DEBUG(__info)
-#endif
-#else
-#include <iostream>
-#include <stdio.h>
-#define DEV_DEBUG 0
-#if DEV_DEBUG
-    #define DEBUG(__info) std::cout << __info
+    #ifdef ARDUINO
+        #include <Arduino.h>
+        #define DEBUG(__info) Serial.print(__info)
+    #else
+        #include <iostream>
+        #define DEBUG(__info) std::cout << __info
+    #endif
 #else
     #define DEBUG(__info)
-#endif
 #endif
 
 #endif
