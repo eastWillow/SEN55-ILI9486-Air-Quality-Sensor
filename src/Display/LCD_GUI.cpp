@@ -360,17 +360,36 @@ void GUI_DisNum(POINT Xpoint, POINT Ypoint, int32_t Nummber,
   }
 
   //Converts a number to a string
-  while (Nummber) {
-    Num_Array[Num_Bit] = Nummber % 10 + '0';
-    Num_Bit++;
-    Nummber /= 10;
-  }
+  if (Nummber == 0) {
+    Str_Array[0] = '0';
+    Str_Array[1] = '\0';
+  } else {
+    int isNegative = 0;
+    uint32_t absNum = Nummber;
+    if (Nummber < 0) {
+      isNegative = 1;
+      // Cast to uint32_t before negating to safely handle INT32_MIN
+      absNum = (uint32_t)(-(int64_t)Nummber);
+    }
 
-  //The string is inverted
-  while (Num_Bit > 0) {
-    Str_Array[Str_Bit] = Num_Array[Num_Bit - 1];
-    Str_Bit ++;
-    Num_Bit --;
+    while (absNum) {
+      Num_Array[Num_Bit] = absNum % 10 + '0';
+      Num_Bit++;
+      absNum /= 10;
+    }
+
+    if (isNegative) {
+      Num_Array[Num_Bit] = '-';
+      Num_Bit++;
+    }
+
+    //The string is inverted
+    while (Num_Bit > 0) {
+      Str_Array[Str_Bit] = Num_Array[Num_Bit - 1];
+      Str_Bit ++;
+      Num_Bit --;
+    }
+    Str_Array[Str_Bit] = '\0';
   }
 
   //show
