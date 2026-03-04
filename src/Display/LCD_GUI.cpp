@@ -153,14 +153,7 @@ void GUI_DrawRectangle(POINT Xstart, POINT Ystart, POINT Xend, POINT Yend,
     GUI_Swop(Ystart, Yend);
 
   if (Filled ) {
-    #if LOW_Speed_Show
-		POINT Ypoint;
-        for(Ypoint = Ystart; Ypoint < Yend; Ypoint++) {
-            GUI_DrawLine(Xstart, Ypoint, Xend, Ypoint, Color , LINE_SOLID, Dot_Pixel);
-        }
-	#elif HIGH_Speed_Show
-		LCD_SetArealColor( Xstart, Ystart, Xend, Yend, Color);
-	#endif
+    LCD_SetArealColor(Xstart, Ystart, Xend, Yend, Color);
   } else {
     GUI_DrawLine(Xstart, Ystart, Xend, Ystart, Color , LINE_SOLID, Dot_Pixel);
     GUI_DrawLine(Xstart, Ystart, Xstart, Yend, Color , LINE_SOLID, Dot_Pixel);
