@@ -15,6 +15,20 @@
 
 class DisplayIntegrationTest : public ::testing::Test {
 protected:
+  // Helper to escape shell arguments to prevent command injection
+  std::string escapeShellArg(const std::string &arg) {
+    std::string escaped = "'";
+    for (char c : arg) {
+      if (c == '\'') {
+        escaped += "'\\''";
+      } else {
+        escaped += c;
+      }
+    }
+    escaped += "'";
+    return escaped;
+  }
+
   void SetUp() override {
     // Ensure deterministic behavior
     srand(1);
@@ -44,8 +58,9 @@ protected:
     // Construct command: compare -metric AE actual reference diff > null 2>&1
     // ImageMagick compare writes metric to stderr (!)
     // Note: We capture stderr to read the metric
-    std::string cmd = "compare -metric AE " + actual + " " + referencePath +
-                      " " + diffPath + " 2>&1";
+    std::string cmd = "compare -metric AE " + escapeShellArg(actual) + " " +
+                      escapeShellArg(referencePath) + " " +
+                      escapeShellArg(diffPath) + " 2>&1";
 
     FILE *pipe = popen(cmd.c_str(), "r");
     if (!pipe)
@@ -78,8 +93,9 @@ protected:
   // Helper to compare two images existing in the current working directory
   int CompareLocalImages(const std::string &image1, const std::string &image2) {
     std::string diffPath = "diff_local_" + image1 + "_" + image2;
-    std::string cmd = "compare -metric AE " + image1 + " " + image2 + " " +
-                      diffPath + " 2>&1";
+    std::string cmd = "compare -metric AE " + escapeShellArg(image1) + " " +
+                      escapeShellArg(image2) + " " + escapeShellArg(diffPath) +
+                      " 2>&1";
 
     FILE *pipe = popen(cmd.c_str(), "r");
     if (!pipe)
