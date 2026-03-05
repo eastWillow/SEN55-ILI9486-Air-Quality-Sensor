@@ -55,7 +55,6 @@ unsigned long SystemTimeProvider::getMillis() {
   return millis();
 #else
   // Default PC implementation or fallback
-  static unsigned long pcMillis = 0;
   pcMillis += 50;
   return pcMillis;
 #endif

@@ -28,6 +28,10 @@ public:
 };
 
 class SystemTimeProvider : public TimeProvider {
+#ifndef ARDUINO
+private:
+  unsigned long pcMillis = 0;
+#endif
 public:
   unsigned long getMillis() override;
 };
