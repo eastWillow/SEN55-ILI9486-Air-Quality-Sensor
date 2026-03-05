@@ -32,9 +32,6 @@
 #endif
 #endif
 
-#define LOW_Speed_Show 0
-#define HIGH_Speed_Show 1
-
 /********************************************************************************
 function:
 			dot pixel
