@@ -1,4 +1,5 @@
 #include "SDL.h"
+#include "../../../App/Log.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -28,10 +29,10 @@ SDL_Surface* SDL_CreateRGBSurfaceWithFormatFrom(void* pixels, int width, int hei
 }
 int SDL_SaveBMP(SDL_Surface* surface, const char* file) {
     if (surface == NULL) {
-        fprintf(stderr, "Mock SDL_SaveBMP: Surface is NULL! Simulating crash.\n");
+        App_Log("Mock SDL_SaveBMP: Surface is NULL! Simulating crash.");
         abort();
     }
-    printf("Mock SDL_SaveBMP to %s\n", file);
+    App_Log("Mock SDL_SaveBMP to %s", file);
     // Create a dummy file
     FILE* f = fopen(file, "w");
     if (f) { fprintf(f, "BMP"); fclose(f); }
