@@ -21,7 +21,7 @@ extern LCD_DIS sLCD_DIS;
 /******************************************************************************
   function:	Coordinate conversion
 ******************************************************************************/
-void GUI_Swop(POINT Point1, POINT Point2)
+void GUI_Swop(POINT &Point1, POINT &Point2)
 {
   POINT Temp;
   Temp = Point1;
