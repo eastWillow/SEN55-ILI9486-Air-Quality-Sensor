@@ -1,6 +1,7 @@
 #ifndef ARDUINO
 #include "LCD_Driver.h"
 #include "LCD_Driver_SDL.h"
+#include "../App/Log.h"
 #include <SDL2/SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,28 +27,28 @@ LCD_DIS sLCD_DIS = {LCD_WIDTH, LCD_HEIGHT, SCAN_DIR_DFT, 0, 0};
 
 void LCD_Init(LCD_SCAN_DIR LCD_ScanDir, uint16_t LCD_BLval) {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
+        App_Log("SDL could not initialize! SDL_Error: %s", SDL_GetError());
         exit(1);
     }
 
     // Create window
     window = SDL_CreateWindow("SEN55 LCD Emulator", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
     if (window == NULL) {
-        printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
+        App_Log("Window could not be created! SDL_Error: %s", SDL_GetError());
         exit(1);
     }
 
     // Create renderer
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (renderer == NULL) {
-        printf("Renderer could not be created! SDL_Error: %s\n", SDL_GetError());
+        App_Log("Renderer could not be created! SDL_Error: %s", SDL_GetError());
         exit(1);
     }
 
     // Create texture for the framebuffer
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB565, SDL_TEXTUREACCESS_STREAMING, WINDOW_WIDTH, WINDOW_HEIGHT);
     if (texture == NULL) {
-        fprintf(stderr, "Texture could not be created! SDL_Error: %s\n", SDL_GetError());
+        App_Log("Texture could not be created! SDL_Error: %s", SDL_GetError());
         exit(1);
     }
 
@@ -55,7 +56,7 @@ void LCD_Init(LCD_SCAN_DIR LCD_ScanDir, uint16_t LCD_BLval) {
     size_t bufferSize = WINDOW_WIDTH * WINDOW_HEIGHT * sizeof(uint16_t);
     frameBuffer = (uint16_t*)malloc(bufferSize);
     if (frameBuffer == NULL) {
-        fprintf(stderr, "Framebuffer could not be allocated!\n");
+        App_Log("Framebuffer could not be allocated!");
         exit(1);
     }
     memset(frameBuffer, 0xFFFF, bufferSize); // White init
@@ -136,11 +137,11 @@ void LCD_Quit() {
 void LCD_SaveScreenshot(const char* filename) {
     SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormatFrom(frameBuffer, WINDOW_WIDTH, WINDOW_HEIGHT, 16, WINDOW_WIDTH * 2, SDL_PIXELFORMAT_RGB565);
     if (surface == NULL) {
-        fprintf(stderr, "Screenshot error: Failed to create surface: %s\n", SDL_GetError());
+        App_Log("Screenshot error: Failed to create surface: %s", SDL_GetError());
         return;
     }
     if (SDL_SaveBMP(surface, filename) != 0) {
-        fprintf(stderr, "Screenshot error: Failed to save BMP to %s: %s\n", filename, SDL_GetError());
+        App_Log("Screenshot error: Failed to save BMP to %s: %s", filename, SDL_GetError());
     }
     SDL_FreeSurface(surface);
 }
