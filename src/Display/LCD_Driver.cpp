@@ -323,9 +323,9 @@ parameter:
 		Color  :   Set show color,16-bit depth
 ********************************************************************************/
 //static void LCD_SetColor(LENGTH Dis_Width, LENGTH Dis_Height, COLOR Color ){
-void LCD_SetColor(COLOR Color , POINT Xpoint, POINT Ypoint)
+void LCD_SetColor(COLOR Color, LENGTH Width, LENGTH Height)
 {
-    LCD_Write_AllData(Color , (uint32_t)Xpoint * (uint32_t)Ypoint);
+    LCD_Write_AllData(Color, (uint32_t)Width * (uint32_t)Height);
 }
 
 /********************************************************************************
@@ -335,7 +335,7 @@ parameter:
 	Ypoint :   The y coordinate of the point
 	Color  :   Set the color
 ********************************************************************************/
-void LCD_SetPointlColor( POINT Xpoint, POINT Ypoint, COLOR Color)
+void LCD_SetPointColor( POINT Xpoint, POINT Ypoint, COLOR Color)
 {
     if ((Xpoint <= sLCD_DIS.LCD_Dis_Column) && (Ypoint <= sLCD_DIS.LCD_Dis_Page)) {
         LCD_SetCursor (Xpoint, Ypoint);
@@ -352,7 +352,7 @@ parameter:
 	Yend   :   End point coordinates
 	Color  :   Set the color
 ********************************************************************************/
-void LCD_SetArealColor(POINT Xstart, POINT Ystart, POINT Xend, POINT Yend,	COLOR Color)
+void LCD_SetAreaColor(POINT Xstart, POINT Ystart, POINT Xend, POINT Yend,	COLOR Color)
 {
     if((Xend > Xstart) && (Yend > Ystart)) {
         LCD_SetWindow(Xstart , Ystart , Xend , Yend  );
@@ -366,7 +366,7 @@ function:
 ********************************************************************************/
 void LCD_Clear(COLOR  Color)
 {
-    LCD_SetArealColor(0, 0, sLCD_DIS.LCD_Dis_Column , sLCD_DIS.LCD_Dis_Page , Color);
+    LCD_SetAreaColor(0, 0, sLCD_DIS.LCD_Dis_Column , sLCD_DIS.LCD_Dis_Page , Color);
 }
 
 #endif // ARDUINO

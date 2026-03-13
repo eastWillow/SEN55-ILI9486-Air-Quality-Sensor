@@ -89,17 +89,17 @@ TEST(GUITest, DisNumZero) {
     uint8_t Str_Array[255] = {0};
     uint8_t Num_Array[255] = {0};
     int16_t Num_Bit = 0, Str_Bit = 0;
-    int32_t Nummber = 0;
+    int32_t Number = 0;
 
-    if (Nummber == 0) {
+    if (Number == 0) {
         Str_Array[0] = '0';
         Str_Array[1] = '\0';
     } else {
         int isNegative = 0;
-        uint32_t absNum = Nummber;
-        if (Nummber < 0) {
+        uint32_t absNum = Number;
+        if (Number < 0) {
             isNegative = 1;
-            absNum = (uint32_t)(-(int64_t)Nummber);
+            absNum = (uint32_t)(-(int64_t)Number);
         }
 
         while (absNum) {
@@ -128,17 +128,17 @@ TEST(GUITest, DisNumPositive) {
     uint8_t Str_Array[255] = {0};
     uint8_t Num_Array[255] = {0};
     int16_t Num_Bit = 0, Str_Bit = 0;
-    int32_t Nummber = 12345;
+    int32_t Number = 12345;
 
-    if (Nummber == 0) {
+    if (Number == 0) {
         Str_Array[0] = '0';
         Str_Array[1] = '\0';
     } else {
         int isNegative = 0;
-        uint32_t absNum = Nummber;
-        if (Nummber < 0) {
+        uint32_t absNum = Number;
+        if (Number < 0) {
             isNegative = 1;
-            absNum = (uint32_t)(-(int64_t)Nummber);
+            absNum = (uint32_t)(-(int64_t)Number);
         }
 
         while (absNum) {
@@ -167,17 +167,17 @@ TEST(GUITest, DisNumNegative) {
     uint8_t Str_Array[255] = {0};
     uint8_t Num_Array[255] = {0};
     int16_t Num_Bit = 0, Str_Bit = 0;
-    int32_t Nummber = -9876;
+    int32_t Number = -9876;
 
-    if (Nummber == 0) {
+    if (Number == 0) {
         Str_Array[0] = '0';
         Str_Array[1] = '\0';
     } else {
         int isNegative = 0;
-        uint32_t absNum = Nummber;
-        if (Nummber < 0) {
+        uint32_t absNum = Number;
+        if (Number < 0) {
             isNegative = 1;
-            absNum = (uint32_t)(-(int64_t)Nummber);
+            absNum = (uint32_t)(-(int64_t)Number);
         }
 
         while (absNum) {
@@ -206,17 +206,17 @@ TEST(GUITest, DisNumInt32Min) {
     uint8_t Str_Array[255] = {0};
     uint8_t Num_Array[255] = {0};
     int16_t Num_Bit = 0, Str_Bit = 0;
-    int32_t Nummber = -2147483648; // INT32_MIN
+    int32_t Number = -2147483648; // INT32_MIN
 
-    if (Nummber == 0) {
+    if (Number == 0) {
         Str_Array[0] = '0';
         Str_Array[1] = '\0';
     } else {
         int isNegative = 0;
-        uint32_t absNum = Nummber;
-        if (Nummber < 0) {
+        uint32_t absNum = Number;
+        if (Number < 0) {
             isNegative = 1;
-            absNum = (uint32_t)(-(int64_t)Nummber);
+            absNum = (uint32_t)(-(int64_t)Number);
         }
 
         while (absNum) {
