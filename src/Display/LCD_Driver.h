@@ -76,8 +76,8 @@ void LCD_WriteData(uint8_t Data);
 
 void LCD_SetWindow(POINT Xstart, POINT Ystart, POINT Xend, POINT Yend);
 void LCD_SetCursor(POINT Xpoint, POINT Ypoint);
-void LCD_SetColor(COLOR Color ,POINT Xpoint, POINT Ypoint);
-void LCD_SetPointlColor(POINT Xpoint, POINT Ypoint, COLOR Color);
-void LCD_SetArealColor(POINT Xstart, POINT Ystart, POINT Xend, POINT Yend,COLOR  Color);
+void LCD_SetColor(COLOR Color, LENGTH Width, LENGTH Height);
+void LCD_SetPointColor(POINT Xpoint, POINT Ypoint, COLOR Color);
+void LCD_SetAreaColor(POINT Xstart, POINT Ystart, POINT Xend, POINT Yend,COLOR  Color);
 void LCD_Clear(COLOR  Color);
 #endif

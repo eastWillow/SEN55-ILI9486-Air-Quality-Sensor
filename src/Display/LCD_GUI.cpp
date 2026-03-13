@@ -21,7 +21,7 @@ extern LCD_DIS sLCD_DIS;
 /******************************************************************************
   function:	Coordinate conversion
 ******************************************************************************/
-void GUI_Swop(POINT Point1, POINT Point2)
+void GUI_Swap(POINT Point1, POINT Point2)
 {
   POINT Temp;
   Temp = Point1;
@@ -57,13 +57,13 @@ void GUI_DrawPoint(POINT Xpoint, POINT Ypoint, COLOR Color,
   if (DOT_STYLE == DOT_STYLE_DFT) {
     for (XDir_Num = 0; XDir_Num < 2 * Dot_Pixel - 1; XDir_Num++) {
       for (YDir_Num = 0; YDir_Num < 2 * Dot_Pixel - 1; YDir_Num++) {
-        LCD_SetPointlColor(Xpoint + XDir_Num - Dot_Pixel, Ypoint + YDir_Num - Dot_Pixel, Color);
+        LCD_SetPointColor(Xpoint + XDir_Num - Dot_Pixel, Ypoint + YDir_Num - Dot_Pixel, Color);
       }
     }
   } else {
     for (XDir_Num = 0; XDir_Num <  Dot_Pixel; XDir_Num++) {
       for (YDir_Num = 0; YDir_Num <  Dot_Pixel; YDir_Num++) {
-        LCD_SetPointlColor(Xpoint + XDir_Num - 1, Ypoint + YDir_Num - 1, Color);
+        LCD_SetPointColor(Xpoint + XDir_Num - 1, Ypoint + YDir_Num - 1, Color);
       }
     }
   }
@@ -88,9 +88,9 @@ void GUI_DrawLine(POINT Xstart, POINT Ystart, POINT Xend, POINT Yend,
   }
 
   if (Xstart > Xend)
-    GUI_Swop(Xstart, Xend);
+    GUI_Swap(Xstart, Xend);
   if (Ystart > Yend)
-    GUI_Swop(Ystart, Yend);
+    GUI_Swap(Ystart, Yend);
 
   POINT Xpoint = Xstart;
   POINT Ypoint = Ystart;
@@ -148,12 +148,12 @@ void GUI_DrawRectangle(POINT Xstart, POINT Ystart, POINT Xend, POINT Yend,
   }
 
   if (Xstart > Xend)
-    GUI_Swop(Xstart, Xend);
+    GUI_Swap(Xstart, Xend);
   if (Ystart > Yend)
-    GUI_Swop(Ystart, Yend);
+    GUI_Swap(Ystart, Yend);
 
   if (Filled ) {
-    LCD_SetArealColor(Xstart, Ystart, Xend, Yend, Color);
+    LCD_SetAreaColor(Xstart, Ystart, Xend, Yend, Color);
   } else {
     GUI_DrawLine(Xstart, Ystart, Xend, Ystart, Color , LINE_SOLID, Dot_Pixel);
     GUI_DrawLine(Xstart, Ystart, Xstart, Yend, Color , LINE_SOLID, Dot_Pixel);
@@ -333,13 +333,13 @@ void GUI_DisString_EN(POINT Xstart, POINT Ystart, const char * pString,
   parameter:
 	Xstart           ：X coordinate
 	Ystart           : Y coordinate
-	Nummber          : The number displayed
+	Number          : The number displayed
 	Font             ：A structure pointer that displays a character size
 	Color_Background : Select the background color of the English character
 	Color_Foreground : Select the foreground color of the English character
 ******************************************************************************/
 #define  ARRAY_LEN 255
-void GUI_DisNum(POINT Xpoint, POINT Ypoint, int32_t Nummber,
+void GUI_DisNum(POINT Xpoint, POINT Ypoint, int32_t Number,
                 sFONT* Font, COLOR Color_Background, COLOR Color_Foreground )
 {
 
@@ -353,16 +353,16 @@ void GUI_DisNum(POINT Xpoint, POINT Ypoint, int32_t Nummber,
   }
 
   //Converts a number to a string
-  if (Nummber == 0) {
+  if (Number == 0) {
     Str_Array[0] = '0';
     Str_Array[1] = '\0';
   } else {
     int isNegative = 0;
-    uint32_t absNum = Nummber;
-    if (Nummber < 0) {
+    uint32_t absNum = Number;
+    if (Number < 0) {
       isNegative = 1;
       // Cast to uint32_t before negating to safely handle INT32_MIN
-      absNum = (uint32_t)(-(int64_t)Nummber);
+      absNum = (uint32_t)(-(int64_t)Number);
     }
 
     while (absNum) {
@@ -492,28 +492,28 @@ void GUI_Showtime(POINT Xstart, POINT Ystart, POINT Xend, POINT Yend,
   Font = GUI_GetFontSize(Dx, Dy);
 
   if ((pTime->Sec % 10) < 10 && (pTime->Sec % 10) > 0) {
-    LCD_SetArealColor(Xstart + Dx * 6, Ystart, Xend, Yend, WHITE);// xx:xx:x0
+    LCD_SetAreaColor(Xstart + Dx * 6, Ystart, Xend, Yend, WHITE);// xx:xx:x0
   } else {
     if ((pTime->Sec / 10) < 6 && (pTime->Sec / 10) > 0) {
-      LCD_SetArealColor(Xstart + Dx * 5, Ystart, Xend, Yend, WHITE);// xx:xx:00
+      LCD_SetAreaColor(Xstart + Dx * 5, Ystart, Xend, Yend, WHITE);// xx:xx:00
     } else {//sec = 60
       pTime->Min = pTime->Min + 1;
       pTime->Sec = 0;
       if ((pTime->Min % 10) < 10 && (pTime->Min % 10) > 0) {
-        LCD_SetArealColor(Xstart + Dx * 3 + Dx / 2, Ystart, Xend, Yend, WHITE);// xx:x0:00
+        LCD_SetAreaColor(Xstart + Dx * 3 + Dx / 2, Ystart, Xend, Yend, WHITE);// xx:x0:00
       } else {
         if ((pTime->Min / 10) < 6 && (pTime->Min / 10) > 0) {
-          LCD_SetArealColor(Xstart + Dx * 2 + Dx / 2, Ystart, Xend, Yend, WHITE);// xx:00:00
+          LCD_SetAreaColor(Xstart + Dx * 2 + Dx / 2, Ystart, Xend, Yend, WHITE);// xx:00:00
         } else {//min = 60
           pTime->Hour =  pTime->Hour + 1;
           pTime->Min = 0;
           if ((pTime->Hour % 10) < 4 && (pTime->Hour % 10) > 0 && pTime->Hour < 24) {// x0:00:00
-            LCD_SetArealColor(Xstart + Dx, Ystart, Xend, Yend, WHITE);
+            LCD_SetAreaColor(Xstart + Dx, Ystart, Xend, Yend, WHITE);
           } else {
             pTime->Hour = 0;
             pTime->Min = 0;
             pTime->Sec = 0;
-            LCD_SetArealColor(Xstart, Ystart, Xend, Yend, WHITE);// 00:00:00
+            LCD_SetAreaColor(Xstart, Ystart, Xend, Yend, WHITE);// 00:00:00
           }
         }
       }

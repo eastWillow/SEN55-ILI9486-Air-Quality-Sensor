@@ -92,11 +92,27 @@ void LCD_SetCursor(POINT Xpoint, POINT Ypoint) {
     // No-op
 }
 
-void LCD_SetColor(COLOR Color, POINT Xpoint, POINT Ypoint) {
-    LCD_SetPointlColor(Xpoint, Ypoint, Color);
+void LCD_SetColor(COLOR Color, LENGTH Width, LENGTH Height) {
+    for (int y = 0; y < Height; y++) {
+        for (int x = 0; x < Width; x++) {
+            // In the emulator we would need an offset to draw exactly
+            // at a specific location if we were drawing blocks.
+            // But looking at LCD_Driver.cpp, LCD_SetColor just writes
+            // 'Width * Height' pixels to the current window.
+            // Since this is a simple mock and the original SDL implementation
+            // just plotted a single point using Xpoint and Ypoint,
+            // let's update it to mirror what it might have done or just
+            // leave it mostly empty/no-op since SDL driver handles SetWindow differently.
+            // Actually, the original SDL mock for LCD_SetColor just did:
+            // LCD_SetPointColor(Xpoint, Ypoint, Color);
+            // which was completely ignoring the fact that it was supposed to write a block.
+            // It was a bug in the emulator. We will fix it to just log or do nothing,
+            // as SDL emulator relies on LCD_SetAreaColor for block fills.
+        }
+    }
 }
 
-void LCD_SetPointlColor(POINT Xpoint, POINT Ypoint, COLOR Color) {
+void LCD_SetPointColor(POINT Xpoint, POINT Ypoint, COLOR Color) {
     if (Xpoint < WINDOW_WIDTH && Ypoint < WINDOW_HEIGHT) {
         frameBuffer[Ypoint * WINDOW_WIDTH + Xpoint] = Color;
     }
@@ -109,10 +125,10 @@ void LCD_SetPointlColor(POINT Xpoint, POINT Ypoint, COLOR Color) {
     // So for emulation, we might just update periodically in the main loop of the PC app.
 }
 
-void LCD_SetArealColor(POINT Xstart, POINT Ystart, POINT Xend, POINT Yend, COLOR Color) {
+void LCD_SetAreaColor(POINT Xstart, POINT Ystart, POINT Xend, POINT Yend, COLOR Color) {
     for (int y = Ystart; y < Yend; y++) {
         for (int x = Xstart; x < Xend; x++) {
-            LCD_SetPointlColor(x, y, Color);
+            LCD_SetPointColor(x, y, Color);
         }
     }
 }
