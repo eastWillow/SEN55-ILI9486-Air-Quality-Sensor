@@ -15,6 +15,14 @@
 
 class DisplayIntegrationTest : public ::testing::Test {
 protected:
+  // Helper to ensure file paths don't start with a dash to prevent option injection
+  std::string safeFilePath(const std::string &path) {
+    if (!path.empty() && path[0] == '-') {
+      return "./" + path;
+    }
+    return path;
+  }
+
   // Helper to escape shell arguments to prevent command injection
   std::string escapeShellArg(const std::string &arg) {
     std::string escaped = "'";
@@ -58,9 +66,9 @@ protected:
     // Construct command: compare -metric AE actual reference diff > null 2>&1
     // ImageMagick compare writes metric to stderr (!)
     // Note: We capture stderr to read the metric
-    std::string cmd = "compare -metric AE " + escapeShellArg(actual) + " " +
-                      escapeShellArg(referencePath) + " " +
-                      escapeShellArg(diffPath) + " 2>&1";
+    std::string cmd = "compare -metric AE " + escapeShellArg(safeFilePath(actual)) + " " +
+                      escapeShellArg(safeFilePath(referencePath)) + " " +
+                      escapeShellArg(safeFilePath(diffPath)) + " 2>&1";
 
     FILE *pipe = popen(cmd.c_str(), "r");
     if (!pipe)
@@ -93,8 +101,8 @@ protected:
   // Helper to compare two images existing in the current working directory
   int CompareLocalImages(const std::string &image1, const std::string &image2) {
     std::string diffPath = "diff_local_" + image1 + "_" + image2;
-    std::string cmd = "compare -metric AE " + escapeShellArg(image1) + " " +
-                      escapeShellArg(image2) + " " + escapeShellArg(diffPath) +
+    std::string cmd = "compare -metric AE " + escapeShellArg(safeFilePath(image1)) + " " +
+                      escapeShellArg(safeFilePath(image2)) + " " + escapeShellArg(safeFilePath(diffPath)) +
                       " 2>&1";
 
     FILE *pipe = popen(cmd.c_str(), "r");
