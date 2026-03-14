@@ -21,7 +21,7 @@ extern LCD_DIS sLCD_DIS;
 /******************************************************************************
   function:	Coordinate conversion
 ******************************************************************************/
-void GUI_Swop(POINT Point1, POINT Point2)
+static void GUI_Swap(POINT &Point1, POINT &Point2)
 {
   POINT Temp;
   Temp = Point1;
@@ -87,11 +87,6 @@ void GUI_DrawLine(POINT Xstart, POINT Ystart, POINT Xend, POINT Yend,
     return;
   }
 
-  if (Xstart > Xend)
-    GUI_Swop(Xstart, Xend);
-  if (Ystart > Yend)
-    GUI_Swop(Ystart, Yend);
-
   POINT Xpoint = Xstart;
   POINT Ypoint = Ystart;
   int dx = (int)Xend - (int)Xstart >= 0 ? Xend - Xstart : Xstart - Xend;
@@ -148,9 +143,9 @@ void GUI_DrawRectangle(POINT Xstart, POINT Ystart, POINT Xend, POINT Yend,
   }
 
   if (Xstart > Xend)
-    GUI_Swop(Xstart, Xend);
+    GUI_Swap(Xstart, Xend);
   if (Ystart > Yend)
-    GUI_Swop(Ystart, Yend);
+    GUI_Swap(Ystart, Yend);
 
   if (Filled ) {
     LCD_SetArealColor(Xstart, Ystart, Xend, Yend, Color);
