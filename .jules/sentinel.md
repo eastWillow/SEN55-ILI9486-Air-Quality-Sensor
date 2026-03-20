@@ -1,0 +1,4 @@
+## 2024-05-24 - [Command Injection via popen]
+**Vulnerability:** Shell invocations using `popen` in `tests/integration/display_integration_test.cpp` sanitize arguments using `escapeShellArg` to prevent standard command injection, but lack a `safeFilePath` helper to prevent option injection. If a path starts with `-`, ImageMagick treats it as an option instead of a file.
+**Learning:** `escapeShellArg` only prevents escaping the shell context. If a user controls a filename and prefixes it with `-` (e.g. `-help`), it can execute unintended options. Prepending `./` to relative paths ensures the shell command treats them as file paths.
+**Prevention:** Implement a `safeFilePath` helper that prepends `./` to relative paths before passing them to the shell, ensuring that utilities recognize them as files rather than command-line flags.
