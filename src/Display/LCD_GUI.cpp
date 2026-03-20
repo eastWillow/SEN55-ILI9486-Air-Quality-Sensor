@@ -16,6 +16,7 @@
 #include "LCD_GUI.h"
 
 #include "Debug.h"
+#include <stdio.h>
 
 extern LCD_DIS sLCD_DIS;
 /******************************************************************************
@@ -338,55 +339,19 @@ void GUI_DisString_EN(POINT Xstart, POINT Ystart, const char * pString,
 	Color_Background : Select the background color of the English character
 	Color_Foreground : Select the foreground color of the English character
 ******************************************************************************/
-#define  ARRAY_LEN 255
 void GUI_DisNum(POINT Xpoint, POINT Ypoint, int32_t Nummber,
                 sFONT* Font, COLOR Color_Background, COLOR Color_Foreground )
 {
-
-  int16_t Num_Bit = 0, Str_Bit = 0;
-  uint8_t Str_Array[ARRAY_LEN] = {0}, Num_Array[ARRAY_LEN] = {0};
-  uint8_t *pStr = Str_Array;
-
   if (Xpoint > sLCD_DIS.LCD_Dis_Column || Ypoint > sLCD_DIS.LCD_Dis_Page) {
     DEBUG("GUI_DisNum Input exceeds the normal display range\r\n");
     return;
   }
 
-  //Converts a number to a string
-  if (Nummber == 0) {
-    Str_Array[0] = '0';
-    Str_Array[1] = '\0';
-  } else {
-    int isNegative = 0;
-    uint32_t absNum = Nummber;
-    if (Nummber < 0) {
-      isNegative = 1;
-      // Cast to uint32_t before negating to safely handle INT32_MIN
-      absNum = (uint32_t)(-(int64_t)Nummber);
-    }
-
-    while (absNum) {
-      Num_Array[Num_Bit] = absNum % 10 + '0';
-      Num_Bit++;
-      absNum /= 10;
-    }
-
-    if (isNegative) {
-      Num_Array[Num_Bit] = '-';
-      Num_Bit++;
-    }
-
-    //The string is inverted
-    while (Num_Bit > 0) {
-      Str_Array[Str_Bit] = Num_Array[Num_Bit - 1];
-      Str_Bit ++;
-      Num_Bit --;
-    }
-    Str_Array[Str_Bit] = '\0';
-  }
-
-  //show
-  GUI_DisString_EN(Xpoint, Ypoint, (const char*)pStr, Font, Color_Background, Color_Foreground );
+  char str_buf[32]; // Sufficient size to hold INT32_MIN plus null-terminator
+  snprintf(str_buf, sizeof(str_buf), "%ld", (long)Nummber);
+  // Using an explicit length check just in case, though snprintf should guarantee null-termination
+  str_buf[sizeof(str_buf)-1] = '\0';
+  GUI_DisString_EN(Xpoint, Ypoint, str_buf, Font, Color_Background, Color_Foreground );
 }
 
 

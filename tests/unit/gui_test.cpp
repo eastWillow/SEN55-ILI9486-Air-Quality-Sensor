@@ -85,158 +85,23 @@ TEST(GUITest, GetFontSizeBestFit) {
     EXPECT_EQ(GUI_GetFontSize(10, 100), &Font12);
 }
 
-TEST(GUITest, DisNumZero) {
-    uint8_t Str_Array[255] = {0};
-    uint8_t Num_Array[255] = {0};
-    int16_t Num_Bit = 0, Str_Bit = 0;
-    int32_t Nummber = 0;
+TEST(GUITest, DisNumExecution) {
+    // Tests that GUI_DisNum executes without crashing or overflowing,
+    // handling various inputs including edge cases. Since GUI_DisNum calls
+    // GUI_DisString_EN which modifies the framebuffer, we just verify execution.
+    // Initialize standard LCD parameters so GUI_DisNum boundary checks pass.
+    extern LCD_DIS sLCD_DIS;
+    sLCD_DIS.LCD_Dis_Column = 480;
+    sLCD_DIS.LCD_Dis_Page = 320;
 
-    if (Nummber == 0) {
-        Str_Array[0] = '0';
-        Str_Array[1] = '\0';
-    } else {
-        int isNegative = 0;
-        uint32_t absNum = Nummber;
-        if (Nummber < 0) {
-            isNegative = 1;
-            absNum = (uint32_t)(-(int64_t)Nummber);
-        }
+    LCD_Init(SCAN_DIR_DFT, 100);
 
-        while (absNum) {
-            Num_Array[Num_Bit] = absNum % 10 + '0';
-            Num_Bit++;
-            absNum /= 10;
-        }
+    // Test various numbers
+    GUI_DisNum(10, 10, 0, &Font24, WHITE, BLACK);
+    GUI_DisNum(10, 50, 12345, &Font24, WHITE, BLACK);
+    GUI_DisNum(10, 90, -9876, &Font24, WHITE, BLACK);
+    GUI_DisNum(10, 130, -2147483648, &Font24, WHITE, BLACK); // INT32_MIN
 
-        if (isNegative) {
-            Num_Array[Num_Bit] = '-';
-            Num_Bit++;
-        }
-
-        while (Num_Bit > 0) {
-            Str_Array[Str_Bit] = Num_Array[Num_Bit - 1];
-            Str_Bit ++;
-            Num_Bit --;
-        }
-        Str_Array[Str_Bit] = '\0';
-    }
-
-    EXPECT_STREQ((const char*)Str_Array, "0");
-}
-
-TEST(GUITest, DisNumPositive) {
-    uint8_t Str_Array[255] = {0};
-    uint8_t Num_Array[255] = {0};
-    int16_t Num_Bit = 0, Str_Bit = 0;
-    int32_t Nummber = 12345;
-
-    if (Nummber == 0) {
-        Str_Array[0] = '0';
-        Str_Array[1] = '\0';
-    } else {
-        int isNegative = 0;
-        uint32_t absNum = Nummber;
-        if (Nummber < 0) {
-            isNegative = 1;
-            absNum = (uint32_t)(-(int64_t)Nummber);
-        }
-
-        while (absNum) {
-            Num_Array[Num_Bit] = absNum % 10 + '0';
-            Num_Bit++;
-            absNum /= 10;
-        }
-
-        if (isNegative) {
-            Num_Array[Num_Bit] = '-';
-            Num_Bit++;
-        }
-
-        while (Num_Bit > 0) {
-            Str_Array[Str_Bit] = Num_Array[Num_Bit - 1];
-            Str_Bit ++;
-            Num_Bit --;
-        }
-        Str_Array[Str_Bit] = '\0';
-    }
-
-    EXPECT_STREQ((const char*)Str_Array, "12345");
-}
-
-TEST(GUITest, DisNumNegative) {
-    uint8_t Str_Array[255] = {0};
-    uint8_t Num_Array[255] = {0};
-    int16_t Num_Bit = 0, Str_Bit = 0;
-    int32_t Nummber = -9876;
-
-    if (Nummber == 0) {
-        Str_Array[0] = '0';
-        Str_Array[1] = '\0';
-    } else {
-        int isNegative = 0;
-        uint32_t absNum = Nummber;
-        if (Nummber < 0) {
-            isNegative = 1;
-            absNum = (uint32_t)(-(int64_t)Nummber);
-        }
-
-        while (absNum) {
-            Num_Array[Num_Bit] = absNum % 10 + '0';
-            Num_Bit++;
-            absNum /= 10;
-        }
-
-        if (isNegative) {
-            Num_Array[Num_Bit] = '-';
-            Num_Bit++;
-        }
-
-        while (Num_Bit > 0) {
-            Str_Array[Str_Bit] = Num_Array[Num_Bit - 1];
-            Str_Bit ++;
-            Num_Bit --;
-        }
-        Str_Array[Str_Bit] = '\0';
-    }
-
-    EXPECT_STREQ((const char*)Str_Array, "-9876");
-}
-
-TEST(GUITest, DisNumInt32Min) {
-    uint8_t Str_Array[255] = {0};
-    uint8_t Num_Array[255] = {0};
-    int16_t Num_Bit = 0, Str_Bit = 0;
-    int32_t Nummber = -2147483648; // INT32_MIN
-
-    if (Nummber == 0) {
-        Str_Array[0] = '0';
-        Str_Array[1] = '\0';
-    } else {
-        int isNegative = 0;
-        uint32_t absNum = Nummber;
-        if (Nummber < 0) {
-            isNegative = 1;
-            absNum = (uint32_t)(-(int64_t)Nummber);
-        }
-
-        while (absNum) {
-            Num_Array[Num_Bit] = absNum % 10 + '0';
-            Num_Bit++;
-            absNum /= 10;
-        }
-
-        if (isNegative) {
-            Num_Array[Num_Bit] = '-';
-            Num_Bit++;
-        }
-
-        while (Num_Bit > 0) {
-            Str_Array[Str_Bit] = Num_Array[Num_Bit - 1];
-            Str_Bit ++;
-            Num_Bit --;
-        }
-        Str_Array[Str_Bit] = '\0';
-    }
-
-    EXPECT_STREQ((const char*)Str_Array, "-2147483648");
+    // Out of bounds test
+    GUI_DisNum(500, 500, 123, &Font24, WHITE, BLACK);
 }
