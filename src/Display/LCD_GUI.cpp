@@ -329,30 +329,16 @@ void GUI_DisString_EN(POINT Xstart, POINT Ystart, const char * pString,
 }
 
 /******************************************************************************
-  function:	Display the string
+  function:	Convert an integer to a string
   parameter:
-	Xstart           ：X coordinate
-	Ystart           : Y coordinate
-	Nummber          : The number displayed
-	Font             ：A structure pointer that displays a character size
-	Color_Background : Select the background color of the English character
-	Color_Foreground : Select the foreground color of the English character
+	Nummber          : The number to convert
+	Str_Array        : Array to store the string
 ******************************************************************************/
-#define  ARRAY_LEN 255
-void GUI_DisNum(POINT Xpoint, POINT Ypoint, int32_t Nummber,
-                sFONT* Font, COLOR Color_Background, COLOR Color_Foreground )
+void GUI_IntToStr(int32_t Nummber, uint8_t* Str_Array)
 {
-
   int16_t Num_Bit = 0, Str_Bit = 0;
-  uint8_t Str_Array[ARRAY_LEN] = {0}, Num_Array[ARRAY_LEN] = {0};
-  uint8_t *pStr = Str_Array;
+  uint8_t Num_Array[255] = {0};
 
-  if (Xpoint > sLCD_DIS.LCD_Dis_Column || Ypoint > sLCD_DIS.LCD_Dis_Page) {
-    DEBUG("GUI_DisNum Input exceeds the normal display range\r\n");
-    return;
-  }
-
-  //Converts a number to a string
   if (Nummber == 0) {
     Str_Array[0] = '0';
     Str_Array[1] = '\0';
@@ -384,6 +370,33 @@ void GUI_DisNum(POINT Xpoint, POINT Ypoint, int32_t Nummber,
     }
     Str_Array[Str_Bit] = '\0';
   }
+}
+
+/******************************************************************************
+  function:	Display the string
+  parameter:
+	Xstart           ：X coordinate
+	Ystart           : Y coordinate
+	Nummber          : The number displayed
+	Font             ：A structure pointer that displays a character size
+	Color_Background : Select the background color of the English character
+	Color_Foreground : Select the foreground color of the English character
+******************************************************************************/
+#define  ARRAY_LEN 255
+void GUI_DisNum(POINT Xpoint, POINT Ypoint, int32_t Nummber,
+                sFONT* Font, COLOR Color_Background, COLOR Color_Foreground )
+{
+
+  uint8_t Str_Array[ARRAY_LEN] = {0};
+  uint8_t *pStr = Str_Array;
+
+  if (Xpoint > sLCD_DIS.LCD_Dis_Column || Ypoint > sLCD_DIS.LCD_Dis_Page) {
+    DEBUG("GUI_DisNum Input exceeds the normal display range\r\n");
+    return;
+  }
+
+  //Converts a number to a string
+  GUI_IntToStr(Nummber, Str_Array);
 
   //show
   GUI_DisString_EN(Xpoint, Ypoint, (const char*)pStr, Font, Color_Background, Color_Foreground );
