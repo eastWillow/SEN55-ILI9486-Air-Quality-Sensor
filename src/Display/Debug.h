@@ -22,15 +22,10 @@
 #define DEV_DEBUG 0
 
 #if DEV_DEBUG
-    #ifdef ARDUINO
-        #include <Arduino.h>
-        #define DEBUG(__info) Serial.print(__info)
-    #else
-        #include <iostream>
-        #define DEBUG(__info) std::cout << __info
-    #endif
+    #include "../App/Log.h"
+    #define DEBUG(...) App_Log(__VA_ARGS__)
 #else
-    #define DEBUG(__info)
+    #define DEBUG(...)
 #endif
 
 #endif

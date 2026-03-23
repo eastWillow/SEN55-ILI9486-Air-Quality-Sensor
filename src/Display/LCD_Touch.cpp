@@ -179,7 +179,7 @@ unsigned char TP_Scan(unsigned char chCoordType) {
       TP_Read_TwiceADC(&sTP_DEV.Xpoint, &sTP_DEV.Ypoint);
       // Read the screen coordinates
     } else if (TP_Read_TwiceADC(&sTP_DEV.Xpoint, &sTP_DEV.Ypoint)) {
-      //          DEBUG("(Xad,Yad) = %d,%d\r\n",sTP_DEV.Xpoint,sTP_DEV.Ypoint);
+      //          DEBUG("(Xad,Yad) = %d,%d",sTP_DEV.Xpoint,sTP_DEV.Ypoint);
       if (sTP_DEV.TP_Scan_Dir ==
           R2L_D2U) { // Converts the result to screen coordinates
         sTP_Draw.Xpoint = sTP_DEV.fXfac * sTP_DEV.Xpoint + sTP_DEV.iXoff;
@@ -199,7 +199,7 @@ unsigned char TP_Scan(unsigned char chCoordType) {
                           sTP_DEV.fYfac * sTP_DEV.Xpoint - sTP_DEV.iYoff;
       }
       //          DEBUG("( x , y ) =
-      //          %d,%d\r\n",sTP_Draw.Xpoint,sTP_Draw.Ypoint);
+      //          %d,%d",sTP_Draw.Xpoint,sTP_Draw.Ypoint);
     }
     if (0 == (sTP_DEV.chStatus & TP_PRESS_DOWN)) { // Not being pressed
       sTP_DEV.chStatus = TP_PRESS_DOWN | TP_PRESSED;
@@ -376,7 +376,7 @@ void TP_Adjust(void) {
       sTP_DEV.chStatus &= ~(1 << 6);
       XYpoint_Arr[cnt][0] = sTP_DEV.Xpoint;
       XYpoint_Arr[cnt][1] = sTP_DEV.Ypoint;
-      //          DEBUG("X%d,Y%d = %d,%d\r\n",
+      //          DEBUG("X%d,Y%d = %d,%d",
       //                cnt,cnt,
       //                XYpoint_Arr[cnt][0],
       //                XYpoint_Arr[cnt][1]);
@@ -417,7 +417,7 @@ void TP_Adjust(void) {
 
         Dsqrt = (float)Sqrt1 / Sqrt2;
         if (Dsqrt < 0.95 || Dsqrt > 1.05 || Sqrt1 == 0 || Sqrt2 == 0) {
-          DEBUG("Adjust X direction \r\n");
+          DEBUG("Adjust X direction ");
           cnt = 0;
           TP_ShowInfo(XYpoint_Arr[0][0], XYpoint_Arr[0][1], XYpoint_Arr[1][0],
                       XYpoint_Arr[1][1], XYpoint_Arr[2][0], XYpoint_Arr[2][1],
@@ -444,7 +444,7 @@ void TP_Adjust(void) {
 
         Dsqrt = (float)Sqrt1 / Sqrt2;
         if (Dsqrt < 0.95 || Dsqrt > 1.05) {
-          DEBUG("Adjust Y direction \r\n");
+          DEBUG("Adjust Y direction ");
           cnt = 0;
           TP_ShowInfo(XYpoint_Arr[0][0], XYpoint_Arr[0][1], XYpoint_Arr[1][0],
                       XYpoint_Arr[1][1], XYpoint_Arr[2][0], XYpoint_Arr[2][1],
@@ -471,7 +471,7 @@ void TP_Adjust(void) {
 
         Dsqrt = (float)Sqrt1 / Sqrt2;
         if (Dsqrt < 0.95 || Dsqrt > 1.05) {
-          DEBUG("Adjust diagonal direction\r\n");
+          DEBUG("Adjust diagonal direction");
           cnt = 0;
           TP_ShowInfo(XYpoint_Arr[0][0], XYpoint_Arr[0][1], XYpoint_Arr[1][0],
                       XYpoint_Arr[1][1], XYpoint_Arr[2][0], XYpoint_Arr[2][1],
@@ -491,7 +491,7 @@ void TP_Adjust(void) {
         // According to the display direction to get
         // the corresponding scale factor and offset
         if (sTP_DEV.TP_Scan_Dir == R2L_D2U) {
-          DEBUG("R2L_D2U\r\n");
+          DEBUG("R2L_D2U");
 
           sTP_DEV.fXfac = (float)(sLCD_DIS.LCD_Dis_Column - 2 * Mar_Val) /
                           (int16_t)(XYpoint_Arr[1][0] - XYpoint_Arr[0][0]);
@@ -508,7 +508,7 @@ void TP_Adjust(void) {
               2;
 
         } else if (sTP_DEV.TP_Scan_Dir == L2R_U2D) {
-          DEBUG("L2R_U2D\r\n");
+          DEBUG("L2R_U2D");
 
           sTP_DEV.fXfac = (float)(sLCD_DIS.LCD_Dis_Column - 2 * Mar_Val) /
                           (int16_t)(XYpoint_Arr[0][0] - XYpoint_Arr[1][0]);
@@ -524,7 +524,7 @@ void TP_Adjust(void) {
                sTP_DEV.fYfac * (XYpoint_Arr[0][1] + XYpoint_Arr[2][1])) /
               2;
         } else if (sTP_DEV.TP_Scan_Dir == U2D_R2L) {
-          DEBUG("U2D_R2L\r\n");
+          DEBUG("U2D_R2L");
 
           sTP_DEV.fXfac = (float)(sLCD_DIS.LCD_Dis_Column - 2 * Mar_Val) /
                           (int16_t)(XYpoint_Arr[1][1] - XYpoint_Arr[0][1]);
@@ -540,7 +540,7 @@ void TP_Adjust(void) {
                sTP_DEV.fYfac * (XYpoint_Arr[2][0] + XYpoint_Arr[0][0])) /
               2;
         } else {
-          DEBUG("D2U_L2R\r\n");
+          DEBUG("D2U_L2R");
 
           sTP_DEV.fXfac = (float)(sLCD_DIS.LCD_Dis_Column - 2 * Mar_Val) /
                           (int16_t)(XYpoint_Arr[0][1] - XYpoint_Arr[1][1]);
@@ -557,17 +557,13 @@ void TP_Adjust(void) {
               2;
         }
 
-        DEBUG("sTP_DEV.fXfac = %f \r\n");
-        DEBUG(sTP_DEV.fXfac);
-        DEBUG("sTP_DEV.fYfac = %f \r\n");
-        DEBUG(sTP_DEV.fYfac);
-        DEBUG("sTP_DEV.iXoff = %d \r\n");
-        DEBUG(sTP_DEV.iXoff);
-        DEBUG("sTP_DEV.iYoff = %d \r\n");
-        DEBUG(sTP_DEV.iYoff);
+        DEBUG("sTP_DEV.fXfac = %f", sTP_DEV.fXfac);
+        DEBUG("sTP_DEV.fYfac = %f", sTP_DEV.fYfac);
+        DEBUG("sTP_DEV.iXoff = %d", sTP_DEV.iXoff);
+        DEBUG("sTP_DEV.iYoff = %d", sTP_DEV.iYoff);
 
         // 6.Calibration is successful
-        DEBUG("Adjust OK\r\n");
+        DEBUG("Adjust OK");
         LCD_Clear(LCD_BACKGROUND);
         GUI_DisString_EN(35, 110, "Touch Screen Adjust OK!", &Font16,
                          FONT_BACKGROUND, RED);
@@ -627,7 +623,7 @@ void TP_GetAdFac(void) {
 *******************************************************************************/
 void TP_Dialog(void) {
   LCD_Clear(LCD_BACKGROUND);
-  DEBUG("Drawing...\r\n");
+  DEBUG("Drawing...");
   // Horizontal screen display
   if (sLCD_DIS.LCD_Dis_Column > sLCD_DIS.LCD_Dis_Page) {
     // Clear screen
