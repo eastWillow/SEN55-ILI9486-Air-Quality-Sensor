@@ -1,0 +1,4 @@
+## 2024-03-24 - Option Injection Risk in Shell Invocations
+**Vulnerability:** The integration test suite used `popen` to invoke the ImageMagick `compare` tool. Although the arguments were escaped to prevent command injection, relative file paths were not prefixed with `./`. This allowed malicious filenames starting with `-` or utilizing ImageMagick pseudo-protocols to be parsed as options or commands by ImageMagick (Option Injection).
+**Learning:** Shell argument escaping (e.g., surrounding with quotes and escaping existing quotes) protects against command injection but does not protect against option injection when the invoked tool interprets specific characters (like `-`) as options.
+**Prevention:** Always prepend `./` to relative file paths when passing them as arguments to shell commands or external tools, ensuring the tool treats the argument strictly as a file path.
