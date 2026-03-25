@@ -1,0 +1,4 @@
+## 2023-11-20 - Prevent Option Injection in Shell Commands
+**Vulnerability:** Option injection vulnerability where shell arguments starting with `-` are treated as command-line flags rather than positional arguments (e.g., file paths). This could lead to unexpected behavior or arbitrary file access/overwrite if user-controlled input starts with `-`.
+**Learning:** Simply wrapping arguments in single quotes using `escapeShellArg` is insufficient to prevent option injection if the argument itself is interpreted by the target program (e.g., ImageMagick's `compare` tool) as an option flag instead of a file path.
+**Prevention:** Prepend `./` to relative file paths that don't start with `/` or `./` using a helper function (like `safeFilePath`) before passing them to the shell. This ensures the command-line tool interprets the string strictly as a file path.

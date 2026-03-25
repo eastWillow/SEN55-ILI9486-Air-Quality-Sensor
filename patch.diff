@@ -1,0 +1,18 @@
+--- tests/integration/display_integration_test.cpp
++++ tests/integration/display_integration_test.cpp
+@@ -28,6 +28,15 @@
+     return escaped;
+   }
+
++  // Helper to ensure file paths are safe from option injection.
++  // If a path starts with '-', command-line tools might interpret it as an option.
++  std::string safeFilePath(const std::string &path) {
++    if (!path.empty() && path[0] != '/' && (path.length() < 2 || (path[0] != '.' && path[1] != '/'))) {
++      return "./" + path;
++    }
++    return path;
++  }
++
+   void SetUp() override {
+     // Ensure deterministic behavior
+     srand(1);
