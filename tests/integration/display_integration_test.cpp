@@ -15,6 +15,16 @@
 
 class DisplayIntegrationTest : public ::testing::Test {
 protected:
+  // Helper to ensure file paths are not treated as options by commands
+  std::string safeFilePath(const std::string &path) {
+    // If it already starts with a slash or dot-slash, it's safe
+    if (path.empty() || path[0] == '/' || path.compare(0, 2, "./") == 0) {
+      return path;
+    }
+    // Prepend ./ to force it to be evaluated as a path, not an option flag
+    return "./" + path;
+  }
+
   // Helper to escape shell arguments to prevent command injection
   std::string escapeShellArg(const std::string &arg) {
     std::string escaped = "'";
@@ -58,9 +68,10 @@ protected:
     // Construct command: compare -metric AE actual reference diff > null 2>&1
     // ImageMagick compare writes metric to stderr (!)
     // Note: We capture stderr to read the metric
-    std::string cmd = "compare -metric AE " + escapeShellArg(actual) + " " +
-                      escapeShellArg(referencePath) + " " +
-                      escapeShellArg(diffPath) + " 2>&1";
+    std::string cmd = "compare -metric AE " +
+                      escapeShellArg(safeFilePath(actual)) + " " +
+                      escapeShellArg(safeFilePath(referencePath)) + " " +
+                      escapeShellArg(safeFilePath(diffPath)) + " 2>&1";
 
     FILE *pipe = popen(cmd.c_str(), "r");
     if (!pipe)
@@ -93,9 +104,10 @@ protected:
   // Helper to compare two images existing in the current working directory
   int CompareLocalImages(const std::string &image1, const std::string &image2) {
     std::string diffPath = "diff_local_" + image1 + "_" + image2;
-    std::string cmd = "compare -metric AE " + escapeShellArg(image1) + " " +
-                      escapeShellArg(image2) + " " + escapeShellArg(diffPath) +
-                      " 2>&1";
+    std::string cmd = "compare -metric AE " +
+                      escapeShellArg(safeFilePath(image1)) + " " +
+                      escapeShellArg(safeFilePath(image2)) + " " +
+                      escapeShellArg(safeFilePath(diffPath)) + " 2>&1";
 
     FILE *pipe = popen(cmd.c_str(), "r");
     if (!pipe)
