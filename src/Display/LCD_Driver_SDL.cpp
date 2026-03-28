@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <cstring>
+#include <algorithm>
 
 // SDL Global Variables
 static SDL_Window* window = NULL;
@@ -110,17 +111,24 @@ void LCD_SetPointlColor(POINT Xpoint, POINT Ypoint, COLOR Color) {
 }
 
 void LCD_SetArealColor(POINT Xstart, POINT Ystart, POINT Xend, POINT Yend, COLOR Color) {
+    if (Xstart >= Xend || Ystart >= Yend) {
+        return;
+    }
+
+    if (Xstart >= WINDOW_WIDTH || Ystart >= WINDOW_HEIGHT) {
+        return;
+    }
+
+    Xend = (Xend > WINDOW_WIDTH) ? WINDOW_WIDTH : Xend;
+    Yend = (Yend > WINDOW_HEIGHT) ? WINDOW_HEIGHT : Yend;
+
     for (int y = Ystart; y < Yend; y++) {
-        for (int x = Xstart; x < Xend; x++) {
-            LCD_SetPointlColor(x, y, Color);
-        }
+        std::fill(&frameBuffer[y * WINDOW_WIDTH + Xstart], &frameBuffer[y * WINDOW_WIDTH + Xend], Color);
     }
 }
 
 void LCD_Clear(COLOR Color) {
-    for (int i = 0; i < WINDOW_WIDTH * WINDOW_HEIGHT; i++) {
-        frameBuffer[i] = Color;
-    }
+    std::fill(frameBuffer, frameBuffer + (WINDOW_WIDTH * WINDOW_HEIGHT), Color);
     LCD_Update();
 }
 
