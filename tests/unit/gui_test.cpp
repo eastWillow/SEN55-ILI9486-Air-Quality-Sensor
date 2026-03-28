@@ -87,156 +87,24 @@ TEST(GUITest, GetFontSizeBestFit) {
 
 TEST(GUITest, DisNumZero) {
     uint8_t Str_Array[255] = {0};
-    uint8_t Num_Array[255] = {0};
-    int16_t Num_Bit = 0, Str_Bit = 0;
-    int32_t Nummber = 0;
-
-    if (Nummber == 0) {
-        Str_Array[0] = '0';
-        Str_Array[1] = '\0';
-    } else {
-        int isNegative = 0;
-        uint32_t absNum = Nummber;
-        if (Nummber < 0) {
-            isNegative = 1;
-            absNum = (uint32_t)(-(int64_t)Nummber);
-        }
-
-        while (absNum) {
-            Num_Array[Num_Bit] = absNum % 10 + '0';
-            Num_Bit++;
-            absNum /= 10;
-        }
-
-        if (isNegative) {
-            Num_Array[Num_Bit] = '-';
-            Num_Bit++;
-        }
-
-        while (Num_Bit > 0) {
-            Str_Array[Str_Bit] = Num_Array[Num_Bit - 1];
-            Str_Bit ++;
-            Num_Bit --;
-        }
-        Str_Array[Str_Bit] = '\0';
-    }
-
+    GUI_IntToStr(0, Str_Array);
     EXPECT_STREQ((const char*)Str_Array, "0");
 }
 
 TEST(GUITest, DisNumPositive) {
     uint8_t Str_Array[255] = {0};
-    uint8_t Num_Array[255] = {0};
-    int16_t Num_Bit = 0, Str_Bit = 0;
-    int32_t Nummber = 12345;
-
-    if (Nummber == 0) {
-        Str_Array[0] = '0';
-        Str_Array[1] = '\0';
-    } else {
-        int isNegative = 0;
-        uint32_t absNum = Nummber;
-        if (Nummber < 0) {
-            isNegative = 1;
-            absNum = (uint32_t)(-(int64_t)Nummber);
-        }
-
-        while (absNum) {
-            Num_Array[Num_Bit] = absNum % 10 + '0';
-            Num_Bit++;
-            absNum /= 10;
-        }
-
-        if (isNegative) {
-            Num_Array[Num_Bit] = '-';
-            Num_Bit++;
-        }
-
-        while (Num_Bit > 0) {
-            Str_Array[Str_Bit] = Num_Array[Num_Bit - 1];
-            Str_Bit ++;
-            Num_Bit --;
-        }
-        Str_Array[Str_Bit] = '\0';
-    }
-
+    GUI_IntToStr(12345, Str_Array);
     EXPECT_STREQ((const char*)Str_Array, "12345");
 }
 
 TEST(GUITest, DisNumNegative) {
     uint8_t Str_Array[255] = {0};
-    uint8_t Num_Array[255] = {0};
-    int16_t Num_Bit = 0, Str_Bit = 0;
-    int32_t Nummber = -9876;
-
-    if (Nummber == 0) {
-        Str_Array[0] = '0';
-        Str_Array[1] = '\0';
-    } else {
-        int isNegative = 0;
-        uint32_t absNum = Nummber;
-        if (Nummber < 0) {
-            isNegative = 1;
-            absNum = (uint32_t)(-(int64_t)Nummber);
-        }
-
-        while (absNum) {
-            Num_Array[Num_Bit] = absNum % 10 + '0';
-            Num_Bit++;
-            absNum /= 10;
-        }
-
-        if (isNegative) {
-            Num_Array[Num_Bit] = '-';
-            Num_Bit++;
-        }
-
-        while (Num_Bit > 0) {
-            Str_Array[Str_Bit] = Num_Array[Num_Bit - 1];
-            Str_Bit ++;
-            Num_Bit --;
-        }
-        Str_Array[Str_Bit] = '\0';
-    }
-
+    GUI_IntToStr(-9876, Str_Array);
     EXPECT_STREQ((const char*)Str_Array, "-9876");
 }
 
 TEST(GUITest, DisNumInt32Min) {
     uint8_t Str_Array[255] = {0};
-    uint8_t Num_Array[255] = {0};
-    int16_t Num_Bit = 0, Str_Bit = 0;
-    int32_t Nummber = -2147483648; // INT32_MIN
-
-    if (Nummber == 0) {
-        Str_Array[0] = '0';
-        Str_Array[1] = '\0';
-    } else {
-        int isNegative = 0;
-        uint32_t absNum = Nummber;
-        if (Nummber < 0) {
-            isNegative = 1;
-            absNum = (uint32_t)(-(int64_t)Nummber);
-        }
-
-        while (absNum) {
-            Num_Array[Num_Bit] = absNum % 10 + '0';
-            Num_Bit++;
-            absNum /= 10;
-        }
-
-        if (isNegative) {
-            Num_Array[Num_Bit] = '-';
-            Num_Bit++;
-        }
-
-        while (Num_Bit > 0) {
-            Str_Array[Str_Bit] = Num_Array[Num_Bit - 1];
-            Str_Bit ++;
-            Num_Bit --;
-        }
-        Str_Array[Str_Bit] = '\0';
-    }
-
+    GUI_IntToStr(-2147483648, Str_Array); // INT32_MIN
     EXPECT_STREQ((const char*)Str_Array, "-2147483648");
 }
