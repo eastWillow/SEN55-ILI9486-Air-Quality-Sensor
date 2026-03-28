@@ -129,11 +129,15 @@ static void displayValue(uint16_t x, uint16_t y, const char *label, float value,
   GUI_DisString_EN(valX, y, valStr, &Font20, LCD_BACKGROUND, color);
 }
 
-void DrawMainScreen() {
+static void DrawScreenHeader(const char* title) {
   LCD_Clear(LCD_BACKGROUND);
-  // 顯示標題
-  GUI_DisString_EN(10, 10, "SEN55 Air Quality", &Font24, LCD_BACKGROUND, BLUE);
+  GUI_DisString_EN(10, 10, title, &Font24, LCD_BACKGROUND, BLUE);
   GUI_DrawLine(0, 40, 480, 40, BLUE, LINE_SOLID, DOT_PIXEL_2X2);
+}
+
+void DrawMainScreen() {
+  // 顯示標題
+  DrawScreenHeader("SEN55 Air Quality");
 
   // Draw Info Button
   DrawButton(btnInfo, false);
@@ -212,9 +216,7 @@ static void DrawTrendChart() {
 }
 
 void DrawTrendScreen() {
-  LCD_Clear(LCD_BACKGROUND);
-  GUI_DisString_EN(10, 10, "PM 2.5 Trend", &Font24, LCD_BACKGROUND, BLUE);
-  GUI_DrawLine(0, 40, 480, 40, BLUE, LINE_SOLID, DOT_PIXEL_2X2);
+  DrawScreenHeader("PM 2.5 Trend");
 
   // Draw Back Button
   DrawButton(btnBack, false);
@@ -223,10 +225,7 @@ void DrawTrendScreen() {
 }
 
 void DrawInfoScreen() {
-  LCD_Clear(LCD_BACKGROUND);
-
-  GUI_DisString_EN(10, 10, "Information", &Font24, LCD_BACKGROUND, BLUE);
-  GUI_DrawLine(0, 40, 480, 40, BLUE, LINE_SOLID, DOT_PIXEL_2X2);
+  DrawScreenHeader("Information");
 
   GUI_DisString_EN(10, 60, "Open Source Code", &Font20, LCD_BACKGROUND, BLACK);
   GUI_DisString_EN(10, 90, "Copyright (c) 2026", &Font16, LCD_BACKGROUND,
