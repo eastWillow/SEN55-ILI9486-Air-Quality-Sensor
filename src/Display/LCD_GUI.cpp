@@ -493,7 +493,7 @@ void GUI_Showtime(POINT Xstart, POINT Ystart, POINT Xend, POINT Yend,
   POINT Dy = Yend - Ystart;      //determine the font size
   Font = GUI_GetFontSize(Dx, Dy);
 
-  if ((pTime->Sec % 10) < 10 && (pTime->Sec % 10) > 0) {
+  if ((pTime->Sec % 10) > 0) {
     LCD_SetArealColor(Xstart + Dx * 6, Ystart, Xend, Yend, WHITE);// xx:xx:x0
   } else {
     if ((pTime->Sec / 10) < 6 && (pTime->Sec / 10) > 0) {
@@ -501,7 +501,7 @@ void GUI_Showtime(POINT Xstart, POINT Ystart, POINT Xend, POINT Yend,
     } else {//sec = 60
       pTime->Min = pTime->Min + 1;
       pTime->Sec = 0;
-      if ((pTime->Min % 10) < 10 && (pTime->Min % 10) > 0) {
+      if ((pTime->Min % 10) > 0) {
         LCD_SetArealColor(Xstart + Dx * 3 + Dx / 2, Ystart, Xend, Yend, WHITE);// xx:x0:00
       } else {
         if ((pTime->Min / 10) < 6 && (pTime->Min / 10) > 0) {

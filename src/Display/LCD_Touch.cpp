@@ -687,23 +687,18 @@ void TP_DrawBoard(void) {
           TP_Adjust();
           TP_Dialog();
         } else if (sTP_Draw.Xpoint > (sLCD_DIS.LCD_Dis_Column - 50) &&
-                   sTP_Draw.Xpoint < sLCD_DIS.LCD_Dis_Column &&
                    sTP_Draw.Ypoint > 20 && sTP_Draw.Ypoint < 70) {
           sTP_Draw.Color = BLUE;
         } else if (sTP_Draw.Xpoint > (sLCD_DIS.LCD_Dis_Column - 50) &&
-                   sTP_Draw.Xpoint < sLCD_DIS.LCD_Dis_Column &&
                    sTP_Draw.Ypoint > 80 && sTP_Draw.Ypoint < 130) {
           sTP_Draw.Color = GREEN;
         } else if (sTP_Draw.Xpoint > (sLCD_DIS.LCD_Dis_Column - 50) &&
-                   sTP_Draw.Xpoint < sLCD_DIS.LCD_Dis_Column &&
                    sTP_Draw.Ypoint > 140 && sTP_Draw.Ypoint < 190) {
           sTP_Draw.Color = RED;
         } else if (sTP_Draw.Xpoint > (sLCD_DIS.LCD_Dis_Column - 50) &&
-                   sTP_Draw.Xpoint < sLCD_DIS.LCD_Dis_Column &&
                    sTP_Draw.Ypoint > 200 && sTP_Draw.Ypoint < 250) {
           sTP_Draw.Color = YELLOW;
         } else if (sTP_Draw.Xpoint > (sLCD_DIS.LCD_Dis_Column - 50) &&
-                   sTP_Draw.Xpoint < sLCD_DIS.LCD_Dis_Column &&
                    sTP_Draw.Ypoint > 260 && sTP_Draw.Ypoint < 310) {
           sTP_Draw.Color = BLACK;
         } else {

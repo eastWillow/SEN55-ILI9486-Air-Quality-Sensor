@@ -5,7 +5,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-SensorMock::SensorMock() : m_gen(1) {}
+SensorMock::SensorMock()
+    : m_fPm1(0.0f), m_fPm25(0.0f), m_fPm4(0.0f), m_fPm10(0.0f), m_fHum(0.0f),
+      m_fTemp(0.0f), m_fVoc(0.0f), m_fNox(0.0f), m_gen(1) {}
 
 void SensorMock::setSeed(uint32_t seed) { m_gen.seed(seed); }
 
