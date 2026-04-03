@@ -60,7 +60,7 @@ void LCD_Init(LCD_SCAN_DIR LCD_ScanDir, uint16_t LCD_BLval) {
         App_Log("Framebuffer could not be allocated!");
         exit(1);
     }
-    memset(frameBuffer, 0xFFFF, bufferSize); // White init
+    memset(frameBuffer, 0xFF, bufferSize); // White init
 }
 
 void LCD_SetGramScanWay(LCD_SCAN_DIR Scan_dir) {
