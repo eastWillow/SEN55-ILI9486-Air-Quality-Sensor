@@ -353,7 +353,6 @@ void App_Loop(SensorIntf *sen5x) {
   if (currentMillis - lastSensorUpdate >= 1000) {
     lastSensorUpdate = currentMillis;
     uint16_t error;
-    char errorMessage[256];
 
     float massConcentrationPm1p0;
     float massConcentrationPm2p5;
@@ -370,6 +369,7 @@ void App_Loop(SensorIntf *sen5x) {
         noxIndex);
 
     if (error) {
+      char errorMessage[256];
       sen5x->errorToString(error, errorMessage, 256);
       App_Log("Read Error: %s", errorMessage);
       if (currentState == APP_STATE_MAIN) {

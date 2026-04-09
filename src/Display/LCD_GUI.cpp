@@ -183,10 +183,9 @@ void GUI_DrawCircle(POINT X_Center, POINT Y_Center, LENGTH Radius,
   //Cumulative error,judge the next point of the logo
   int16_t Esp = 3 - (Radius << 1 );
 
-  int16_t sCountY;
   if (Draw_Fill == DRAW_FULL) {
     while (XCurrent <= YCurrent ) { //Realistic circles
-      for (sCountY = XCurrent; sCountY <= YCurrent; sCountY ++ ) {
+      for (int16_t sCountY = XCurrent; sCountY <= YCurrent; sCountY ++ ) {
         GUI_DrawPoint(X_Center + XCurrent, Y_Center + sCountY, Color, DOT_PIXEL_DFT, DOT_STYLE_DFT );//1
         GUI_DrawPoint(X_Center - XCurrent, Y_Center + sCountY, Color, DOT_PIXEL_DFT, DOT_STYLE_DFT );//2
         GUI_DrawPoint(X_Center - sCountY, Y_Center + XCurrent, Color, DOT_PIXEL_DFT, DOT_STYLE_DFT );//3
@@ -327,7 +326,6 @@ void GUI_DisString_EN(POINT Xstart, POINT Ystart, const char * pString,
 
 void GUI_IntToStr(int32_t Nummber, uint8_t* Str_Array)
 {
-  int16_t Num_Bit = 0, Str_Bit = 0;
   uint8_t Num_Array[ARRAY_LEN] = {0};
 
   //Converts a number to a string
@@ -335,6 +333,7 @@ void GUI_IntToStr(int32_t Nummber, uint8_t* Str_Array)
     Str_Array[0] = '0';
     Str_Array[1] = '\0';
   } else {
+    int16_t Num_Bit = 0, Str_Bit = 0;
     int isNegative = 0;
     uint32_t absNum = Nummber;
     if (Nummber < 0) {
@@ -388,7 +387,7 @@ void GUI_DisNum(POINT Xpoint, POINT Ypoint, int32_t Nummber,
   GUI_IntToStr(Nummber, Str_Array);
 
   //show
-  GUI_DisString_EN(Xpoint, Ypoint, (const char*)pStr, Font, Color_Background, Color_Foreground );
+  GUI_DisString_EN(Xpoint, Ypoint, reinterpret_cast<const char*>(pStr), Font, Color_Background, Color_Foreground );
 }
 
 
@@ -438,9 +437,9 @@ void GUI_DisGrayMap(POINT Xpoint, POINT Ypoint, const unsigned char *pBmp)
   Width = (*(pBmp + 3) << 8) | (*(pBmp + 2));
   Height = (*(pBmp + 5) << 8) | (*(pBmp + 4));
 
-  POINT i, j;
   if (Gray == 0x04) { //Sixteen gray levels
     pBmp = pBmp + 6;
+    POINT i, j;
     for (j = 0; j < Height; j++)
       for (i = 0; i < Width / 2; i++) {
         GUI_DrawPoint(Xpoint + i * 2, Ypoint + j, ~(*pBmp >> 4), DOT_PIXEL_DFT, DOT_STYLE_DFT);
@@ -485,7 +484,7 @@ sFONT *GUI_GetFontSize(POINT Dx, POINT Dy)
 void GUI_Showtime(POINT Xstart, POINT Ystart, POINT Xend, POINT Yend,
                   DEV_TIME *pTime, COLOR Color)
 {
-  uint8_t value[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+  const uint8_t value[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
   sFONT *Font = NULL;
 
   //According to the display area adaptive font size
