@@ -27,6 +27,7 @@ SDL_Surface* SDL_CreateRGBSurfaceWithFormatFrom(void* pixels, int width, int hei
     }
     return (SDL_Surface*)1;
 }
+// cppcheck-suppress constParameterPointer
 int SDL_SaveBMP(SDL_Surface* surface, const char* file) {
     if (surface == NULL) {
         App_Log("Mock SDL_SaveBMP: Surface is NULL! Simulating crash.");
