@@ -87,7 +87,6 @@ typedef struct {
     uint8_t  Min;   //0 - 59
     uint8_t  Sec;   //0 - 59
 } DEV_TIME;
-extern DEV_TIME sDev_time;
 
 /********************************************************************************
 function:
