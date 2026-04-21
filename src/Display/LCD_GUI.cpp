@@ -30,7 +30,7 @@ static void GUI_Swap(POINT &Point1, POINT &Point2)
 }
 
 /******************************************************************************
-  function:	Coordinate conversion
+  function:	Clear screen
 ******************************************************************************/
 void GUI_Clear(COLOR Color)
 {
@@ -492,33 +492,32 @@ void GUI_Showtime(POINT Xstart, POINT Ystart, POINT Xend, POINT Yend,
   POINT Dy = Yend - Ystart;      //determine the font size
   Font = GUI_GetFontSize(Dx, Dy);
 
-  if ((pTime->Sec % 10) > 0) {
-    LCD_SetArealColor(Xstart + Dx * 6, Ystart, Xend, Yend, WHITE);// xx:xx:x0
-  } else {
-    if ((pTime->Sec / 10) < 6 && (pTime->Sec / 10) > 0) {
-      LCD_SetArealColor(Xstart + Dx * 5, Ystart, Xend, Yend, WHITE);// xx:xx:00
-    } else {//sec = 60
-      pTime->Min = pTime->Min + 1;
-      pTime->Sec = 0;
-      if ((pTime->Min % 10) > 0) {
-        LCD_SetArealColor(Xstart + Dx * 3 + Dx / 2, Ystart, Xend, Yend, WHITE);// xx:x0:00
-      } else {
-        if ((pTime->Min / 10) < 6 && (pTime->Min / 10) > 0) {
-          LCD_SetArealColor(Xstart + Dx * 2 + Dx / 2, Ystart, Xend, Yend, WHITE);// xx:00:00
-        } else {//min = 60
-          pTime->Hour =  pTime->Hour + 1;
-          pTime->Min = 0;
-          if ((pTime->Hour % 10) < 4 && (pTime->Hour % 10) > 0 && pTime->Hour < 24) {// x0:00:00
-            LCD_SetArealColor(Xstart + Dx, Ystart, Xend, Yend, WHITE);
-          } else {
-            pTime->Hour = 0;
-            pTime->Min = 0;
-            pTime->Sec = 0;
-            LCD_SetArealColor(Xstart, Ystart, Xend, Yend, WHITE);// 00:00:00
-          }
-        }
+  // Time carry logic
+  if (pTime->Sec >= 60) {
+    pTime->Sec = 0;
+    pTime->Min++;
+    if (pTime->Min >= 60) {
+      pTime->Min = 0;
+      pTime->Hour++;
+      if (pTime->Hour >= 24) {
+        pTime->Hour = 0;
       }
     }
+  }
+
+  // Partial clear to prevent flickering
+  if ((pTime->Sec % 10) > 0) {
+    LCD_SetArealColor(Xstart + Dx * 6, Ystart, Xend, Yend, WHITE); // xx:xx:x0
+  } else if ((pTime->Sec / 10) > 0) {
+    LCD_SetArealColor(Xstart + Dx * 5, Ystart, Xend, Yend, WHITE); // xx:xx:00
+  } else if ((pTime->Min % 10) > 0) {
+    LCD_SetArealColor(Xstart + Dx * 3 + Dx / 2, Ystart, Xend, Yend, WHITE); // xx:x0:00
+  } else if ((pTime->Min / 10) > 0) {
+    LCD_SetArealColor(Xstart + Dx * 2 + Dx / 2, Ystart, Xend, Yend, WHITE); // xx:00:00
+  } else if ((pTime->Hour % 10) > 0) {
+    LCD_SetArealColor(Xstart + Dx, Ystart, Xend, Yend, WHITE); // x0:00:00
+  } else {
+    LCD_SetArealColor(Xstart, Ystart, Xend, Yend, WHITE); // 00:00:00
   }
 
   //Write data into the cache
