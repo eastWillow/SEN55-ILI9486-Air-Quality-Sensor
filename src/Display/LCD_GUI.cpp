@@ -333,7 +333,6 @@ void GUI_IntToStr(int32_t Nummber, uint8_t* Str_Array)
     Str_Array[0] = '0';
     Str_Array[1] = '\0';
   } else {
-    int16_t Num_Bit = 0, Str_Bit = 0;
     int isNegative = 0;
     uint32_t absNum = Nummber;
     if (Nummber < 0) {
@@ -342,6 +341,7 @@ void GUI_IntToStr(int32_t Nummber, uint8_t* Str_Array)
       absNum = (uint32_t)(-(int64_t)Nummber);
     }
 
+    int16_t Num_Bit = 0;
     while (absNum) {
       Num_Array[Num_Bit] = absNum % 10 + '0';
       Num_Bit++;
@@ -353,6 +353,7 @@ void GUI_IntToStr(int32_t Nummber, uint8_t* Str_Array)
       Num_Bit++;
     }
 
+    int16_t Str_Bit = 0;
     //The string is inverted
     while (Num_Bit > 0) {
       Str_Array[Str_Bit] = Num_Array[Num_Bit - 1];
@@ -439,9 +440,8 @@ void GUI_DisGrayMap(POINT Xpoint, POINT Ypoint, const unsigned char *pBmp)
 
   if (Gray == 0x04) { //Sixteen gray levels
     pBmp = pBmp + 6;
-    POINT i, j;
-    for (j = 0; j < Height; j++)
-      for (i = 0; i < Width / 2; i++) {
+    for (POINT j = 0; j < Height; j++)
+      for (POINT i = 0; i < Width / 2; i++) {
         GUI_DrawPoint(Xpoint + i * 2, Ypoint + j, ~(*pBmp >> 4), DOT_PIXEL_DFT, DOT_STYLE_DFT);
         GUI_DrawPoint(Xpoint + i * 2 + 1, Ypoint + j, ~*pBmp , DOT_PIXEL_DFT, DOT_STYLE_DFT);
         pBmp++;
