@@ -88,23 +88,23 @@ TEST(GUITest, GetFontSizeBestFit) {
 TEST(GUITest, DisNumZero) {
     uint8_t Str_Array[255] = {0};
     GUI_IntToStr(0, Str_Array);
-    EXPECT_STREQ((const char*)Str_Array, "0");
+    EXPECT_STREQ(reinterpret_cast<const char*>(Str_Array), "0");
 }
 
 TEST(GUITest, DisNumPositive) {
     uint8_t Str_Array[255] = {0};
     GUI_IntToStr(12345, Str_Array);
-    EXPECT_STREQ((const char*)Str_Array, "12345");
+    EXPECT_STREQ(reinterpret_cast<const char*>(Str_Array), "12345");
 }
 
 TEST(GUITest, DisNumNegative) {
     uint8_t Str_Array[255] = {0};
     GUI_IntToStr(-9876, Str_Array);
-    EXPECT_STREQ((const char*)Str_Array, "-9876");
+    EXPECT_STREQ(reinterpret_cast<const char*>(Str_Array), "-9876");
 }
 
 TEST(GUITest, DisNumInt32Min) {
     uint8_t Str_Array[255] = {0};
     GUI_IntToStr(-2147483648, Str_Array); // INT32_MIN
-    EXPECT_STREQ((const char*)Str_Array, "-2147483648");
+    EXPECT_STREQ(reinterpret_cast<const char*>(Str_Array), "-2147483648");
 }
