@@ -248,28 +248,22 @@ void GUI_DisChar(POINT Xpoint, POINT Ypoint, const char Acsii_Char,
   uint32_t Char_Offset = (Acsii_Char - ' ') * Font->Height * (Font->Width / 8 + (Font->Width % 8 ? 1 : 0));
   const unsigned char *ptr = &Font->table[Char_Offset];
 
+  // If the background color is different from FONT_BACKGROUND, fill the background area first
+  if (FONT_BACKGROUND != Color_Background) {
+    LCD_SetArealColor(Xpoint, Ypoint, Xpoint + Font->Width, Ypoint + Font->Height, Color_Background);
+  }
+
   for (Page = 0; Page < Font->Height; Page ++ ) {
     for (Column = 0; Column < Font->Width; Column ++ ) {
 
-      //To determine whether the font background color and screen background color is consistent
-      if (FONT_BACKGROUND == Color_Background) { //this process is to speed up the scan
-        #ifdef ARDUINO
-        if (pgm_read_byte(ptr) & (0x80 >> (Column % 8)))
-        #else
-        if (*ptr & (0x80 >> (Column % 8)))
-        #endif
-          GUI_DrawPoint(Xpoint + Column, Ypoint + Page, Color_Foreground, DOT_PIXEL_DFT, DOT_STYLE_DFT);
-      } else {
-        #ifdef ARDUINO
-        if (pgm_read_byte(ptr) & (0x80 >> (Column % 8))) {
-        #else
-        if (*ptr & (0x80 >> (Column % 8))) {
-        #endif
-          GUI_DrawPoint(Xpoint + Column, Ypoint + Page, Color_Foreground, DOT_PIXEL_DFT, DOT_STYLE_DFT);
-        } else {
-          GUI_DrawPoint(Xpoint + Column, Ypoint + Page, Color_Background, DOT_PIXEL_DFT, DOT_STYLE_DFT);
-        }
+      #ifdef ARDUINO
+      if (pgm_read_byte(ptr) & (0x80 >> (Column % 8))) {
+      #else
+      if (*ptr & (0x80 >> (Column % 8))) {
+      #endif
+        GUI_DrawPoint(Xpoint + Column, Ypoint + Page, Color_Foreground, DOT_PIXEL_DFT, DOT_STYLE_DFT);
       }
+
       //One pixel is 8 bits
       if (Column % 8 == 7)
         ptr++;
