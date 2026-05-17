@@ -93,8 +93,9 @@ void LCD_SetCursor(POINT Xpoint, POINT Ypoint) {
     // No-op
 }
 
-void LCD_SetColor(COLOR Color, POINT Xpoint, POINT Ypoint) {
-    LCD_SetPointlColor(Xpoint, Ypoint, Color);
+void LCD_SetColor(COLOR Color, LENGTH Width, LENGTH Height) {
+    // The SDL driver does not rely on hardware cursor state.
+    // Memory block filling is handled via LCD_SetArealColor.
 }
 
 void LCD_SetPointlColor(POINT Xpoint, POINT Ypoint, COLOR Color) {

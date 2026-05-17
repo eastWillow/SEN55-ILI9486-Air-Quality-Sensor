@@ -323,9 +323,9 @@ parameter:
 		Color  :   Set show color,16-bit depth
 ********************************************************************************/
 //static void LCD_SetColor(LENGTH Dis_Width, LENGTH Dis_Height, COLOR Color ){
-void LCD_SetColor(COLOR Color , POINT Xpoint, POINT Ypoint)
+void LCD_SetColor(COLOR Color, LENGTH Width, LENGTH Height)
 {
-    LCD_Write_AllData(Color , (uint32_t)Xpoint * (uint32_t)Ypoint);
+    LCD_Write_AllData(Color, static_cast<uint32_t>(Width) * static_cast<uint32_t>(Height));
 }
 
 /********************************************************************************
