@@ -87,6 +87,36 @@ void GUI_DrawLine(POINT Xstart, POINT Ystart, POINT Xend, POINT Yend,
     return;
   }
 
+  // Fast path for orthogonal solid lines
+  if (Line_Style == LINE_SOLID && (Xstart == Xend || Ystart == Yend)) {
+    int16_t minX = Xstart < Xend ? Xstart : Xend;
+    int16_t maxX = Xstart > Xend ? Xstart : Xend;
+    int16_t minY = Ystart < Yend ? Ystart : Yend;
+    int16_t maxY = Ystart > Yend ? Ystart : Yend;
+
+    // Calculate bounding box based on GUI_DrawPoint's DOT_STYLE_DFT offsets.
+    // GUI_DrawPoint loops from 0 to 2*Dot_Pixel-2, adding offset -Dot_Pixel.
+    int16_t offsetMin = -Dot_Pixel;
+    int16_t offsetMax = Dot_Pixel - 2;
+
+    int16_t x0 = minX + offsetMin;
+    int16_t x1 = maxX + offsetMax + 1; // +1 because LCD_SetArealColor bounds are exclusive
+    int16_t y0 = minY + offsetMin;
+    int16_t y1 = maxY + offsetMax + 1;
+
+    // Boundary clipping
+    if (x0 < 0) x0 = 0;
+    if (y0 < 0) y0 = 0;
+    if (x1 > (int16_t)sLCD_DIS.LCD_Dis_Column) x1 = sLCD_DIS.LCD_Dis_Column;
+    if (y1 > (int16_t)sLCD_DIS.LCD_Dis_Page) y1 = sLCD_DIS.LCD_Dis_Page;
+
+    // Use block fill operation (LCD_SetArealColor) directly instead of O(N) points
+    if (x0 < x1 && y0 < y1) {
+      LCD_SetArealColor(x0, y0, x1, y1, Color);
+    }
+    return;
+  }
+
   POINT Xpoint = Xstart;
   POINT Ypoint = Ystart;
   int dx = (int)Xend - (int)Xstart >= 0 ? Xend - Xstart : Xstart - Xend;
