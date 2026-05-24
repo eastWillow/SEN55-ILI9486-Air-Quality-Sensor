@@ -87,6 +87,26 @@ void GUI_DrawLine(POINT Xstart, POINT Ystart, POINT Xend, POINT Yend,
     return;
   }
 
+  if (Line_Style == LINE_SOLID && (Xstart == Xend || Ystart == Yend)) {
+    POINT min_X = Xstart < Xend ? Xstart : Xend;
+    POINT max_X = Xstart > Xend ? Xstart : Xend;
+    POINT min_Y = Ystart < Yend ? Ystart : Yend;
+    POINT max_Y = Ystart > Yend ? Ystart : Yend;
+
+    POINT X1 = (min_X >= Dot_Pixel) ? (min_X - Dot_Pixel) : 0;
+    POINT Y1 = (min_Y >= Dot_Pixel) ? (min_Y - Dot_Pixel) : 0;
+    POINT X2 = max_X + Dot_Pixel - 1;
+    POINT Y2 = max_Y + Dot_Pixel - 1;
+
+    if (X2 > sLCD_DIS.LCD_Dis_Column) X2 = sLCD_DIS.LCD_Dis_Column;
+    if (Y2 > sLCD_DIS.LCD_Dis_Page) Y2 = sLCD_DIS.LCD_Dis_Page;
+
+    if (X1 < X2 && Y1 < Y2) {
+      LCD_SetArealColor(X1, Y1, X2, Y2, Color);
+    }
+    return;
+  }
+
   POINT Xpoint = Xstart;
   POINT Ypoint = Ystart;
   int dx = (int)Xend - (int)Xstart >= 0 ? Xend - Xstart : Xstart - Xend;
