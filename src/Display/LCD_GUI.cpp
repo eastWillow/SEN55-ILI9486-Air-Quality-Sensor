@@ -53,19 +53,27 @@ void GUI_DrawPoint(POINT Xpoint, POINT Ypoint, COLOR Color,
     return;
   }
 
-  int16_t XDir_Num , YDir_Num;
+  int16_t Xstart, Ystart, Xend, Yend;
+
+  // Calculate inclusive bounds to match the original loops exactly
   if (DOT_STYLE == DOT_STYLE_DFT) {
-    for (XDir_Num = 0; XDir_Num < 2 * Dot_Pixel - 1; XDir_Num++) {
-      for (YDir_Num = 0; YDir_Num < 2 * Dot_Pixel - 1; YDir_Num++) {
-        LCD_SetPointlColor(Xpoint + XDir_Num - Dot_Pixel, Ypoint + YDir_Num - Dot_Pixel, Color);
-      }
-    }
+    Xstart = (int16_t)Xpoint - Dot_Pixel;
+    Ystart = (int16_t)Ypoint - Dot_Pixel;
+    Xend = (int16_t)Xpoint + Dot_Pixel - 2;
+    Yend = (int16_t)Ypoint + Dot_Pixel - 2;
   } else {
-    for (XDir_Num = 0; XDir_Num <  Dot_Pixel; XDir_Num++) {
-      for (YDir_Num = 0; YDir_Num <  Dot_Pixel; YDir_Num++) {
-        LCD_SetPointlColor(Xpoint + XDir_Num - 1, Ypoint + YDir_Num - 1, Color);
-      }
-    }
+    Xstart = (int16_t)Xpoint - 1;
+    Ystart = (int16_t)Ypoint - 1;
+    Xend = (int16_t)Xpoint + Dot_Pixel - 2;
+    Yend = (int16_t)Ypoint + Dot_Pixel - 2;
+  }
+
+  if (Xstart < 0) Xstart = 0;
+  if (Ystart < 0) Ystart = 0;
+
+  if (Xstart <= Xend && Ystart <= Yend) {
+    // Pass exclusive bounds to LCD_SetArealColor by adding 1
+    LCD_SetArealColor(Xstart, Ystart, Xend + 1, Yend + 1, Color);
   }
 }
 
