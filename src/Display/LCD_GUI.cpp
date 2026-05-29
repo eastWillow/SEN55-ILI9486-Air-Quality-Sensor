@@ -61,13 +61,13 @@ void GUI_DrawPoint(POINT Xpoint, POINT Ypoint, COLOR Color,
   if (DOT_STYLE == DOT_STYLE_DFT) {
     XDir_Start = static_cast<int16_t>(Xpoint) - Dot_Pixel;
     YDir_Start = static_cast<int16_t>(Ypoint) - Dot_Pixel;
-    XDir_End = static_cast<int16_t>(Xpoint) + Dot_Pixel - 2;
-    YDir_End = static_cast<int16_t>(Ypoint) + Dot_Pixel - 2;
+    XDir_End = static_cast<int16_t>(Xpoint) + Dot_Pixel - 1;
+    YDir_End = static_cast<int16_t>(Ypoint) + Dot_Pixel - 1;
   } else {
     XDir_Start = static_cast<int16_t>(Xpoint) - 1;
     YDir_Start = static_cast<int16_t>(Ypoint) - 1;
-    XDir_End = static_cast<int16_t>(Xpoint) + Dot_Pixel - 2;
-    YDir_End = static_cast<int16_t>(Ypoint) + Dot_Pixel - 2;
+    XDir_End = static_cast<int16_t>(Xpoint) + Dot_Pixel - 1;
+    YDir_End = static_cast<int16_t>(Ypoint) + Dot_Pixel - 1;
   }
 
   if (XDir_Start < 0) {
@@ -77,14 +77,14 @@ void GUI_DrawPoint(POINT Xpoint, POINT Ypoint, COLOR Color,
     YDir_Start = 0;
   }
 
-  if (XDir_End >= sLCD_DIS.LCD_Dis_Column) {
-    XDir_End = sLCD_DIS.LCD_Dis_Column - 1;
+  if (XDir_End > sLCD_DIS.LCD_Dis_Column) {
+    XDir_End = sLCD_DIS.LCD_Dis_Column;
   }
-  if (YDir_End >= sLCD_DIS.LCD_Dis_Page) {
-    YDir_End = sLCD_DIS.LCD_Dis_Page - 1;
+  if (YDir_End > sLCD_DIS.LCD_Dis_Page) {
+    YDir_End = sLCD_DIS.LCD_Dis_Page;
   }
 
-  if (XDir_Start <= XDir_End && YDir_Start <= YDir_End) {
+  if (XDir_Start < XDir_End && YDir_Start < YDir_End) {
     LCD_SetArealColor(XDir_Start, YDir_Start, XDir_End, YDir_End, Color);
   }
 }
