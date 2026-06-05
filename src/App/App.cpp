@@ -24,7 +24,7 @@ namespace {
 // Application State
 AppState currentState = APP_STATE_MAIN;
 unsigned long lastSensorUpdate = 0;
-unsigned long lastTransitionTime = (unsigned long)-200;
+unsigned long lastTransitionTime = static_cast<unsigned long>(-200);
 TimeProvider *appTime = nullptr;
 
 // Feedback state
@@ -69,7 +69,7 @@ void MockTimeProvider::set(unsigned long ms) { current_time = ms; }
 void App_ResetState() {
   currentState = APP_STATE_MAIN;
   lastSensorUpdate = 0;
-  lastTransitionTime = (unsigned long)-200;
+  lastTransitionTime = static_cast<unsigned long>(-200);
   appTime = nullptr;
   trendCount = 0;
   lastTrendUpdate = 0;
@@ -78,7 +78,7 @@ void App_ResetState() {
 
 AppState App_GetState() { return currentState; }
 
-// 輔助函式：繪製按鈕
+// Helper function: Draw a button
 static void DrawButton(const Button& btn, bool inverted) {
   if (inverted) {
     // Feedback mode: Invert colors and fill background
@@ -92,40 +92,41 @@ static void DrawButton(const Button& btn, bool inverted) {
   }
 }
 
-// 輔助函式：在指定位置顯示標籤與數值
+// Helper function: Display a label and value at the specified position
 static void displayValue(uint16_t x, uint16_t y, const char *label, float value,
                          const char *unit, uint16_t color) {
-  // 1. 顯示標籤 (標籤通常固定不變，直接畫即可)
+  // 1. Display label (Labels are usually fixed, so we can draw them directly)
   GUI_DisString_EN(x, y, label, &Font20, LCD_BACKGROUND, BLACK);
 
-  // 2. 格式化數值
+  // 2. Format value
   char valStr[64];
   snprintf(valStr, sizeof(valStr), "%.1f%s", value, unit);
 
   // ---------------------------------------------------------
-  // 修改重點：在顯示新數值前，先畫一個背景色的實心矩形清除舊內容
+  // Focus: Before displaying the new value, draw a solid rectangle
+  // with the background color to clear the old content
   // ---------------------------------------------------------
 
-  // 設定數值的起始 X 座標 (與下方顯示數值的座標一致)
+  // Set the starting X coordinate of the value (consistent with the coordinates below)
   uint16_t valX = x + 150;
 
-  // 設定要清除的寬度 (例如 120 pixels，依據數值長度調整)
-  // 如果數值包含單位很長，可能需要加大此數值
+  // Set the width to be cleared (e.g., 120 pixels, adjust according to value length)
+  // If the value contains a long unit, this width may need to be increased
   uint16_t clearWidth = 150;
 
-  // 簡單的邊界檢查，防止超出螢幕邊緣 (480) 導致函式報錯
+  // Simple boundary check to prevent errors caused by exceeding the screen edge (480)
   if (valX + clearWidth > 480) {
     clearWidth = 480 - valX;
   }
 
-  // 畫實心矩形 (LCD_BACKGROUND = 白色, DRAW_FULL = 實心填滿)
-  // 高度設為 20 (配合 Font20)
+  // Draw a solid rectangle (LCD_BACKGROUND = White, DRAW_FULL = Solid fill)
+  // Set height to 20 (to match Font20)
   GUI_DrawRectangle(valX, y, valX + clearWidth, y + 20, LCD_BACKGROUND,
                     DRAW_FULL, DOT_PIXEL_DFT);
 
   // ---------------------------------------------------------
 
-  // 3. 顯示新數值
+  // 3. Display new value
   GUI_DisString_EN(valX, y, valStr, &Font20, LCD_BACKGROUND, color);
 }
 
@@ -136,7 +137,7 @@ static void DrawScreenHeader(const char* title) {
 }
 
 void DrawMainScreen() {
-  // 顯示標題
+  // Display header
   DrawScreenHeader("SEN55 Air Quality");
 
   // Draw Info Button
@@ -207,10 +208,10 @@ static void DrawTrendChart() {
   for (int i = 0; i < trendCount - 1; i++) {
     int x1 = chartX + i;
     int y1 =
-        chartY + chartH - (int)((pm25History[i] - minVal) / range * chartH);
+        chartY + chartH - static_cast<int>((pm25History[i] - minVal) / range * chartH);
     int x2 = chartX + i + 1;
     int y2 =
-        chartY + chartH - (int)((pm25History[i + 1] - minVal) / range * chartH);
+        chartY + chartH - static_cast<int>((pm25History[i + 1] - minVal) / range * chartH);
     GUI_DrawLine(x1, y1, x2, y2, RED, LINE_SOLID, DOT_PIXEL_1X1);
   }
 }
@@ -245,13 +246,13 @@ void App_Setup(SensorIntf *sen5x, TimeProvider *timeProvider) {
   // Store the time provider
   appTime = timeProvider;
 
-  // 1. 初始化 LCD 底層系統 (包含 Serial)
+  // 1. Initialize underlying LCD system (including Serial)
   System_Init();
 
   App_Log("SEN55 Air Quality LCD Demo");
   App_Log("LCD Init...");
 
-  // 2. 初始化 LCD
+  // 2. Initialize LCD
   LCD_SCAN_DIR Lcd_ScanDir = SCAN_DIR_DFT;
   LCD_Init(Lcd_ScanDir, 100);
   TP_Init(Lcd_ScanDir);
@@ -260,7 +261,7 @@ void App_Setup(SensorIntf *sen5x, TimeProvider *timeProvider) {
 
   DrawMainScreen();
 
-  // 3. 初始化 SEN55
+  // 3. Initialize SEN55
   App_Log("Sensirion Init...");
 
   // Note: Wire.begin() is handled inside SensorReal::begin() for Arduino
@@ -277,11 +278,11 @@ void App_Setup(SensorIntf *sen5x, TimeProvider *timeProvider) {
                      RED);
   }
 
-  // 設定溫度補償 (依據範例)
+  // Set temperature compensation (based on example)
   float tempOffset = 0.0;
   sen5x->setTemperatureOffsetSimple(tempOffset);
 
-  // 開始測量
+  // Start measurement
   error = sen5x->startMeasurement();
   if (error) {
     sen5x->errorToString(error, errorMessage, 256);
@@ -388,7 +389,7 @@ void App_Loop(SensorIntf *sen5x) {
         // PM 1.0
         displayValue(10, 60, "PM 1.0:", massConcentrationPm1p0, " ug/m3",
                      BLACK);
-        // PM 2.5 (使用紅色強調)
+        // PM 2.5 (Highlighted in Red)
         displayValue(10, 90, "PM 2.5:", massConcentrationPm2p5, " ug/m3", RED);
         // PM 4.0
         displayValue(10, 120, "PM 4.0:", massConcentrationPm4p0, " ug/m3",
@@ -397,11 +398,11 @@ void App_Loop(SensorIntf *sen5x) {
         displayValue(10, 150, "PM 10 :", massConcentrationPm10p0, " ug/m3",
                      BLACK);
 
-        // --- 環境數值 ---
+        // --- Environment Values ---
         displayValue(10, 180, "Temp  :", ambientTemperature, " C", BLUE);
         displayValue(10, 210, "Humid :", ambientHumidity, " %", BLUE);
 
-        // --- 氣體指數 ---
+        // --- Gas Indices ---
         if (isnan(vocIndex)) {
           GUI_DisString_EN(10, 240, "VOC Idx:   n/a", &Font20, LCD_BACKGROUND,
                            BLACK);
