@@ -294,20 +294,36 @@ void GUI_DisChar(POINT Xpoint, POINT Ypoint, const char Acsii_Char,
   }
 
   for (Page = 0; Page < Font->Height; Page ++ ) {
+    int16_t startCol = -1;
     for (Column = 0; Column < Font->Width; Column ++ ) {
 
+      bool active = false;
       #ifdef ARDUINO
-      if (pgm_read_byte(ptr) & (0x80 >> (Column % 8))) {
+      active = pgm_read_byte(ptr) & (0x80 >> (Column % 8));
       #else
-      if (*ptr & (0x80 >> (Column % 8))) {
+      active = *ptr & (0x80 >> (Column % 8));
       #endif
-        GUI_DrawPoint(Xpoint + Column, Ypoint + Page, Color_Foreground, DOT_PIXEL_DFT, DOT_STYLE_DFT);
+
+      if (active) {
+        if (startCol == -1) {
+          startCol = Column;
+        }
+      } else {
+        if (startCol != -1) {
+          GUI_DrawLine(Xpoint + startCol, Ypoint + Page, Xpoint + Column - 1, Ypoint + Page, Color_Foreground, LINE_SOLID, DOT_PIXEL_DFT);
+          startCol = -1;
+        }
       }
 
       //One pixel is 8 bits
       if (Column % 8 == 7)
         ptr++;
     }/* Write a line */
+
+    if (startCol != -1) {
+      GUI_DrawLine(Xpoint + startCol, Ypoint + Page, Xpoint + Font->Width - 1, Ypoint + Page, Color_Foreground, LINE_SOLID, DOT_PIXEL_DFT);
+    }
+
     if (Font->Width % 8 != 0)
       ptr++;
   }/* Write all */
@@ -443,10 +459,21 @@ void GUI_Disbitmap(POINT Xpoint, POINT Ypoint, const unsigned char *pMap,
 {
   POINT i, j, byteWidth = (Width + 7) / 8;
   for (j = 0; j < Height; j++) {
+    int16_t startCol = -1;
     for (i = 0; i < Width; i ++) {
       if (*(pMap + j * byteWidth + i / 8) & (128 >> (i & 7))) {
-        GUI_DrawPoint(Xpoint + i, Ypoint + j, WHITE, DOT_PIXEL_DFT, DOT_STYLE_DFT);
+        if (startCol == -1) {
+          startCol = i;
+        }
+      } else {
+        if (startCol != -1) {
+          GUI_DrawLine(Xpoint + startCol, Ypoint + j, Xpoint + i - 1, Ypoint + j, WHITE, LINE_SOLID, DOT_PIXEL_DFT);
+          startCol = -1;
+        }
       }
+    }
+    if (startCol != -1) {
+      GUI_DrawLine(Xpoint + startCol, Ypoint + j, Xpoint + Width - 1, Ypoint + j, WHITE, LINE_SOLID, DOT_PIXEL_DFT);
     }
   }
 }
@@ -474,12 +501,35 @@ void GUI_DisGrayMap(POINT Xpoint, POINT Ypoint, const unsigned char *pBmp)
 
   if (Gray == 0x04) { //Sixteen gray levels
     pBmp = pBmp + 6;
-    for (POINT j = 0; j < Height; j++)
+    for (POINT j = 0; j < Height; j++) {
+      int16_t startCol = -1;
+      COLOR currentColor = 0;
       for (POINT i = 0; i < Width / 2; i++) {
-        GUI_DrawPoint(Xpoint + i * 2, Ypoint + j, ~(*pBmp >> 4), DOT_PIXEL_DFT, DOT_STYLE_DFT);
-        GUI_DrawPoint(Xpoint + i * 2 + 1, Ypoint + j, ~*pBmp , DOT_PIXEL_DFT, DOT_STYLE_DFT);
+        COLOR c1 = ~(*pBmp >> 4);
+        COLOR c2 = ~*pBmp;
+
+        // Pixel 1
+        if (startCol == -1) {
+          startCol = i * 2;
+          currentColor = c1;
+        } else if (c1 != currentColor) {
+          GUI_DrawLine(Xpoint + startCol, Ypoint + j, Xpoint + (i * 2) - 1, Ypoint + j, currentColor, LINE_SOLID, DOT_PIXEL_DFT);
+          startCol = i * 2;
+          currentColor = c1;
+        }
+
+        // Pixel 2
+        if (c2 != currentColor) {
+          GUI_DrawLine(Xpoint + startCol, Ypoint + j, Xpoint + (i * 2 + 1) - 1, Ypoint + j, currentColor, LINE_SOLID, DOT_PIXEL_DFT);
+          startCol = i * 2 + 1;
+          currentColor = c2;
+        }
         pBmp++;
       }
+      if (startCol != -1) {
+        GUI_DrawLine(Xpoint + startCol, Ypoint + j, Xpoint + Width - 1, Ypoint + j, currentColor, LINE_SOLID, DOT_PIXEL_DFT);
+      }
+    }
   } else {
     DEBUG("Does not support type\r\n");
     return;
