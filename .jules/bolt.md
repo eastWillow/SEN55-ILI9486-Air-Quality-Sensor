@@ -4,3 +4,6 @@
 ## 2024-05-24 - Grouped drawing via GUI_DrawLine optimization
 **Learning:** In character and bitmap rendering logic, drawing point-by-point has significant overhead due to setup calls per pixel. However, contiguous runs of identical pixels (like consecutive 1s in a font bitmap or a grey image line) can be batched together. The `GUI_DrawLine` correctly falls back to `LCD_SetArealColor` for 1D orthogonal lines, which provides an O(1) SPI block transfer optimization similar to the old `GUI_DrawPoint`. Grouping pixels into horizontal line segments significantly improves average render time.
 **Action:** Always seek to detect runs of contiguous filled pixels and submit them via a single line or rectangle block-draw operation, converting O(N pixels) commands to O(Segments) commands.
+## 2024-05-24 - Static UI element rendering optimization
+**Learning:** Drawing static labels within continuous loop functions (like `App_Loop`) unnecessarily consumes SPI bandwidth and CPU cycles, as the content does not change between sensor updates.
+**Action:** Move all static UI element rendering (e.g., fixed labels for sensor values) into screen initialization routines (e.g., `DrawMainScreen`). Only update the dynamic values inside the loop.

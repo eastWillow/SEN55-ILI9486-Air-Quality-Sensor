@@ -92,13 +92,10 @@ static void DrawButton(const Button& btn, bool inverted) {
   }
 }
 
-// Helper function: Display a label and value at the specified position
-static void displayValue(uint16_t x, uint16_t y, const char *label, float value,
+// Helper function: Display a value at the specified position
+static void displayValue(uint16_t x, uint16_t y, float value,
                          const char *unit, uint16_t color) {
-  // 1. Display label (Labels are usually fixed, so we can draw them directly)
-  GUI_DisString_EN(x, y, label, &Font20, LCD_BACKGROUND, BLACK);
-
-  // 2. Format value
+  // 1. Format value
   char valStr[64];
   snprintf(valStr, sizeof(valStr), "%.1f%s", value, unit);
 
@@ -144,6 +141,16 @@ void DrawMainScreen() {
   DrawButton(btnInfo, false);
   // Draw Trend Button
   DrawButton(btnTrend, false);
+
+  // Draw static labels for sensor values
+  GUI_DisString_EN(10, 60, "PM 1.0:", &Font20, LCD_BACKGROUND, BLACK);
+  GUI_DisString_EN(10, 90, "PM 2.5:", &Font20, LCD_BACKGROUND, BLACK);
+  GUI_DisString_EN(10, 120, "PM 4.0:", &Font20, LCD_BACKGROUND, BLACK);
+  GUI_DisString_EN(10, 150, "PM 10 :", &Font20, LCD_BACKGROUND, BLACK);
+  GUI_DisString_EN(10, 180, "Temp  :", &Font20, LCD_BACKGROUND, BLACK);
+  GUI_DisString_EN(10, 210, "Humid :", &Font20, LCD_BACKGROUND, BLACK);
+  GUI_DisString_EN(10, 240, "VOC Idx:", &Font20, LCD_BACKGROUND, BLACK);
+  GUI_DisString_EN(10, 270, "NOx Idx:", &Font20, LCD_BACKGROUND, BLACK);
 }
 
 static void DrawTrendChart() {
@@ -387,34 +394,33 @@ void App_Loop(SensorIntf *sen5x) {
       // Update UI if in MAIN state
       if (currentState == APP_STATE_MAIN) {
         // PM 1.0
-        displayValue(10, 60, "PM 1.0:", massConcentrationPm1p0, " ug/m3",
-                     BLACK);
+        displayValue(10, 60, massConcentrationPm1p0, " ug/m3", BLACK);
         // PM 2.5 (Highlighted in Red)
-        displayValue(10, 90, "PM 2.5:", massConcentrationPm2p5, " ug/m3", RED);
+        displayValue(10, 90, massConcentrationPm2p5, " ug/m3", RED);
         // PM 4.0
-        displayValue(10, 120, "PM 4.0:", massConcentrationPm4p0, " ug/m3",
-                     BLACK);
+        displayValue(10, 120, massConcentrationPm4p0, " ug/m3", BLACK);
         // PM 10.0
-        displayValue(10, 150, "PM 10 :", massConcentrationPm10p0, " ug/m3",
-                     BLACK);
+        displayValue(10, 150, massConcentrationPm10p0, " ug/m3", BLACK);
 
         // --- Environment Values ---
-        displayValue(10, 180, "Temp  :", ambientTemperature, " C", BLUE);
-        displayValue(10, 210, "Humid :", ambientHumidity, " %", BLUE);
+        displayValue(10, 180, ambientTemperature, " C", BLUE);
+        displayValue(10, 210, ambientHumidity, " %", BLUE);
 
         // --- Gas Indices ---
         if (isnan(vocIndex)) {
-          GUI_DisString_EN(10, 240, "VOC Idx:   n/a", &Font20, LCD_BACKGROUND,
-                           BLACK);
+          uint16_t valX = 10 + 150;
+          GUI_DrawRectangle(valX, 240, valX + 150, 240 + 20, LCD_BACKGROUND, DRAW_FULL, DOT_PIXEL_DFT);
+          GUI_DisString_EN(valX, 240, "n/a", &Font20, LCD_BACKGROUND, BLACK);
         } else {
-          displayValue(10, 240, "VOC Idx:", vocIndex, "", MAGENTA);
+          displayValue(10, 240, vocIndex, "", MAGENTA);
         }
 
         if (isnan(noxIndex)) {
-          GUI_DisString_EN(10, 270, "NOx Idx:   n/a", &Font20, LCD_BACKGROUND,
-                           BLACK);
+          uint16_t valX = 10 + 150;
+          GUI_DrawRectangle(valX, 270, valX + 150, 270 + 20, LCD_BACKGROUND, DRAW_FULL, DOT_PIXEL_DFT);
+          GUI_DisString_EN(valX, 270, "n/a", &Font20, LCD_BACKGROUND, BLACK);
         } else {
-          displayValue(10, 270, "NOx Idx:", noxIndex, "", MAGENTA);
+          displayValue(10, 270, noxIndex, "", MAGENTA);
         }
       }
 
