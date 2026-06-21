@@ -26,6 +26,7 @@
 #include <avr/pgmspace.h>
 #else
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 #ifndef PROGMEM
 #define PROGMEM
