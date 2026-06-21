@@ -112,7 +112,9 @@ static void displayValue(uint16_t x, uint16_t y, float value,
   uint16_t clearWidth = 150;
 
   // Simple boundary check to prevent errors caused by exceeding the screen edge (480)
-  if (valX + clearWidth > 480) {
+  if (valX >= 480) {
+    clearWidth = 0;
+  } else if (valX + clearWidth > 480) {
     clearWidth = 480 - valX;
   }
 
