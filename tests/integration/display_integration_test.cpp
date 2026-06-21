@@ -72,7 +72,7 @@ protected:
 
     FILE *pipe = popen(cmd.c_str(), "r");
     if (!pipe)
-      return -1;
+      return -2;
 
     char buffer[128];
     std::string result = "";
@@ -84,7 +84,7 @@ protected:
     // Trim whitespace from result
     size_t first = result.find_first_not_of(" \t\n\r");
     if (first == std::string::npos)
-      return -1;
+      return -2;
     size_t last = result.find_last_not_of(" \t\n\r");
     result = result.substr(first, (last - first + 1));
 
@@ -95,7 +95,7 @@ protected:
       // If ImageMagick isn't installed or command failed, it might return text
       std::cerr << "ImageMagick Error or Parse Failed: '" << result << "'"
                 << std::endl;
-      return -1;
+      return -2;
     }
   }
   // Helper to compare two images existing in the current working directory
@@ -107,7 +107,7 @@ protected:
 
     FILE *pipe = popen(cmd.c_str(), "r");
     if (!pipe)
-      return -1;
+      return -2;
 
     char buffer[128];
     std::string result = "";
@@ -118,14 +118,14 @@ protected:
 
     size_t first = result.find_first_not_of(" \t\n\r");
     if (first == std::string::npos)
-      return -1;
+      return -2;
     size_t last = result.find_last_not_of(" \t\n\r");
     result = result.substr(first, (last - first + 1));
 
     try {
       return std::stoi(result);
     } catch (...) {
-      return -1;
+      return -2;
     }
   }
 };
