@@ -7,3 +7,7 @@
 ## 2024-05-24 - Static UI element rendering optimization
 **Learning:** Drawing static labels within continuous loop functions (like `App_Loop`) unnecessarily consumes SPI bandwidth and CPU cycles, as the content does not change between sensor updates.
 **Action:** Move all static UI element rendering (e.g., fixed labels for sensor values) into screen initialization routines (e.g., `DrawMainScreen`). Only update the dynamic values inside the loop.
+
+## 2026-06-26 - Text Memoization Cache to Prevent Redundant SPI Writes
+**Learning:** In embedded graphics systems, redrawing text that hasn't changed consumes significant SPI bus time and CPU cycles. Continually re-rendering static or slowly changing sensor values in the main loop leads to a performance bottleneck.
+**Action:** Implement a coordinate-based memoization cache (like `TextCache` in `App.cpp`) that stores the last formatted string rendered at a specific `(x, y)` position. Before drawing, format the new string and compare it against the cache; if it matches, return early to skip the redundant draw call.

@@ -38,6 +38,16 @@ float pm25History[TREND_MAX_POINTS];
 int trendCount = 0;
 unsigned long lastTrendUpdate = 0;
 
+// Text Memoization Cache
+struct TextCache {
+  uint16_t x;
+  uint16_t y;
+  char text[64];
+};
+#define MAX_TEXT_CACHE 16
+TextCache textCache[MAX_TEXT_CACHE];
+int textCacheCount = 0;
+
 void RecordTrendData(float pm25) {
   if (trendCount < TREND_MAX_POINTS) {
     pm25History[trendCount++] = pm25;
@@ -74,6 +84,7 @@ void App_ResetState() {
   trendCount = 0;
   lastTrendUpdate = 0;
   inFeedback = false;
+  textCacheCount = 0;
 }
 
 AppState App_GetState() { return currentState; }
@@ -97,15 +108,49 @@ static void displayValue(uint16_t x, uint16_t y, float value,
                          const char *unit, uint16_t color) {
   // 1. Format value
   char valStr[64];
-  snprintf(valStr, sizeof(valStr), "%.1f%s", value, unit);
+  if (isnan(value)) {
+    snprintf(valStr, sizeof(valStr), "n/a");
+  } else {
+    snprintf(valStr, sizeof(valStr), "%.1f%s", value, unit);
+  }
+
+  // Set the starting X coordinate of the value (consistent with the coordinates below)
+  uint16_t valX = x + 150;
+
+  // 2. Check memoization cache
+  for (int i = 0; i < textCacheCount; i++) {
+    if (textCache[i].x == valX && textCache[i].y == y) {
+      if (strncmp(textCache[i].text, valStr, sizeof(textCache[i].text)) == 0) {
+        return; // Value unchanged, skip redraw
+      } else {
+        // Update cache
+        strncpy(textCache[i].text, valStr, sizeof(textCache[i].text));
+        textCache[i].text[sizeof(textCache[i].text) - 1] = '\0';
+        break;
+      }
+    }
+    if (i == textCacheCount - 1 && textCacheCount < MAX_TEXT_CACHE) {
+       textCache[textCacheCount].x = valX;
+       textCache[textCacheCount].y = y;
+       strncpy(textCache[textCacheCount].text, valStr, sizeof(textCache[textCacheCount].text));
+       textCache[textCacheCount].text[sizeof(textCache[textCacheCount].text) - 1] = '\0';
+       textCacheCount++;
+       break;
+    }
+  }
+
+  if (textCacheCount == 0) {
+     textCache[0].x = valX;
+     textCache[0].y = y;
+     strncpy(textCache[0].text, valStr, sizeof(textCache[0].text));
+     textCache[0].text[sizeof(textCache[0].text) - 1] = '\0';
+     textCacheCount++;
+  }
 
   // ---------------------------------------------------------
   // Focus: Before displaying the new value, draw a solid rectangle
   // with the background color to clear the old content
   // ---------------------------------------------------------
-
-  // Set the starting X coordinate of the value (consistent with the coordinates below)
-  uint16_t valX = x + 150;
 
   // Set the width to be cleared (e.g., 120 pixels, adjust according to value length)
   // If the value contains a long unit, this width may need to be increased
@@ -136,6 +181,8 @@ static void DrawScreenHeader(const char* title) {
 }
 
 void DrawMainScreen() {
+  textCacheCount = 0;
+
   // Display header
   DrawScreenHeader("SEN55 Air Quality");
 
@@ -409,21 +456,8 @@ void App_Loop(SensorIntf *sen5x) {
         displayValue(10, 210, ambientHumidity, " %", BLUE);
 
         // --- Gas Indices ---
-        if (isnan(vocIndex)) {
-          uint16_t valX = 10 + 150;
-          GUI_DrawRectangle(valX, 240, valX + 150, 240 + 20, LCD_BACKGROUND, DRAW_FULL, DOT_PIXEL_DFT);
-          GUI_DisString_EN(valX, 240, "n/a", &Font20, LCD_BACKGROUND, BLACK);
-        } else {
-          displayValue(10, 240, vocIndex, "", MAGENTA);
-        }
-
-        if (isnan(noxIndex)) {
-          uint16_t valX = 10 + 150;
-          GUI_DrawRectangle(valX, 270, valX + 150, 270 + 20, LCD_BACKGROUND, DRAW_FULL, DOT_PIXEL_DFT);
-          GUI_DisString_EN(valX, 270, "n/a", &Font20, LCD_BACKGROUND, BLACK);
-        } else {
-          displayValue(10, 270, noxIndex, "", MAGENTA);
-        }
+        displayValue(10, 240, vocIndex, "", MAGENTA);
+        displayValue(10, 270, noxIndex, "", MAGENTA);
       }
 
       // If in TREND state, redraw chart if it was just updated
