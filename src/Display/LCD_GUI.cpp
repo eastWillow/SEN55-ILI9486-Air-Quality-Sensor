@@ -287,7 +287,13 @@ void GUI_DisChar(POINT Xpoint, POINT Ypoint, const char Acsii_Char,
     return;
   }
 
-  uint32_t Char_Offset = (Acsii_Char - ' ') * Font->Height * (Font->Width / 8 + (Font->Width % 8 ? 1 : 0));
+  // Security: Prevent out-of-bounds array access for non-printable characters
+  char safe_char = Acsii_Char;
+  if (safe_char < ' ' || safe_char > '~') {
+    safe_char = '?';
+  }
+
+  uint32_t Char_Offset = (safe_char - ' ') * Font->Height * (Font->Width / 8 + (Font->Width % 8 ? 1 : 0));
   const unsigned char *ptr = &Font->table[Char_Offset];
 
   // If the background color is different from FONT_BACKGROUND, fill the background area first
