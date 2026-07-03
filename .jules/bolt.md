@@ -11,3 +11,6 @@
 ## 2026-06-26 - Text Memoization Cache to Prevent Redundant SPI Writes
 **Learning:** In embedded graphics systems, redrawing text that hasn't changed consumes significant SPI bus time and CPU cycles. Continually re-rendering static or slowly changing sensor values in the main loop leads to a performance bottleneck.
 **Action:** Implement a coordinate-based memoization cache (like `TextCache` in `App.cpp`) that stores the last formatted string rendered at a specific `(x, y)` position. Before drawing, format the new string and compare it against the cache; if it matches, return early to skip the redundant draw call.
+## 2026-06-26 - Loop optimization in continuous drawing functions
+**Learning:** In loop-based drawing functions like `DrawTrendChart`, operations executed on each iteration (e.g. up to 400 points) can cause CPU bottlenecks on embedded systems. Specifically, re-calculating identical math operations across consecutive loop boundaries and performing division within the loop wastes CPU cycles.
+**Action:** Always pre-calculate constant scaling factors outside the loop and cache the end-coordinates of the previous iteration to reuse as the start-coordinates of the next.
