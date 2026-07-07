@@ -261,14 +261,20 @@ static void DrawTrendChart() {
                    BLACK);
 
   // Draw data lines
-  for (int i = 0; i < trendCount - 1; i++) {
-    int x1 = chartX + i;
-    int y1 =
-        chartY + chartH - static_cast<int>((pm25History[i] - minVal) / range * chartH);
-    int x2 = chartX + i + 1;
-    int y2 =
-        chartY + chartH - static_cast<int>((pm25History[i + 1] - minVal) / range * chartH);
-    GUI_DrawLine(x1, y1, x2, y2, RED, LINE_SOLID, DOT_PIXEL_1X1);
+  // Optimization: Pre-calculate the scale to avoid dividing inside the loop,
+  // and reuse the previous y2 value as the new y1 to cut math ops in half.
+  if (trendCount > 0) {
+    float scale = chartH / range;
+    int y1 = chartY + chartH - static_cast<int>((pm25History[0] - minVal) * scale);
+
+    for (int i = 0; i < trendCount - 1; i++) {
+      int x1 = chartX + i;
+      int x2 = x1 + 1;
+      int y2 = chartY + chartH - static_cast<int>((pm25History[i + 1] - minVal) * scale);
+
+      GUI_DrawLine(x1, y1, x2, y2, RED, LINE_SOLID, DOT_PIXEL_1X1);
+      y1 = y2; // Cache for next iteration
+    }
   }
 }
 
