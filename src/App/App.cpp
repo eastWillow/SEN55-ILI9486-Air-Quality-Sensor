@@ -272,7 +272,13 @@ static void DrawTrendChart() {
       int x2 = x1 + 1;
       int y2 = chartY + chartH - static_cast<int>((pm25History[i + 1] - minVal) * scale);
 
-      GUI_DrawLine(x1, y1, x2, y2, RED, LINE_SOLID, DOT_PIXEL_1X1);
+      // Optimization: Replace diagonal Bresenham line with orthogonal segments
+      // to utilize O(1) LCD_SetArealColor block-fill instead of O(dy) pixel-by-pixel draws.
+      if (y1 != y2) {
+        GUI_DrawLine(x1, y1, x1, y2, RED, LINE_SOLID, DOT_PIXEL_1X1);
+      }
+      GUI_DrawLine(x1, y2, x2, y2, RED, LINE_SOLID, DOT_PIXEL_1X1);
+
       y1 = y2; // Cache for next iteration
     }
   }
