@@ -347,6 +347,16 @@ static void TP_ShowInfo(POINT Xpoint0, POINT Ypoint0, POINT Xpoint1,
   GUI_DisNum(40 + 10 * TP_Dx, 240, hwFac, TP_Font, FONT_BACKGROUND, RED);
 }
 
+static void TP_Adjust_HandleFail(unsigned char Mar_Val, const POINT XYpoint_Arr[4][2], float Dsqrt) {
+  TP_ShowInfo(XYpoint_Arr[0][0], XYpoint_Arr[0][1], XYpoint_Arr[1][0],
+              XYpoint_Arr[1][1], XYpoint_Arr[2][0], XYpoint_Arr[2][1],
+              XYpoint_Arr[3][0], XYpoint_Arr[3][1], Dsqrt * 100);
+  Driver_Delay_ms(1000);
+  TP_DrawCross(sLCD_DIS.LCD_Dis_Column - Mar_Val,
+               sLCD_DIS.LCD_Dis_Page - Mar_Val, WHITE);
+  TP_DrawCross(Mar_Val, Mar_Val, RED);
+}
+
 /*******************************************************************************
   function:
         Touch screen adjust
@@ -418,14 +428,8 @@ void TP_Adjust(void) {
         Dsqrt = (float)Sqrt1 / Sqrt2;
         if (Dsqrt < 0.95 || Dsqrt > 1.05 || Sqrt1 == 0 || Sqrt2 == 0) {
           DEBUG("Adjust X direction");
+          TP_Adjust_HandleFail(Mar_Val, XYpoint_Arr, Dsqrt);
           cnt = 0;
-          TP_ShowInfo(XYpoint_Arr[0][0], XYpoint_Arr[0][1], XYpoint_Arr[1][0],
-                      XYpoint_Arr[1][1], XYpoint_Arr[2][0], XYpoint_Arr[2][1],
-                      XYpoint_Arr[3][0], XYpoint_Arr[3][1], Dsqrt * 100);
-          Driver_Delay_ms(1000);
-          TP_DrawCross(sLCD_DIS.LCD_Dis_Column - Mar_Val,
-                       sLCD_DIS.LCD_Dis_Page - Mar_Val, WHITE);
-          TP_DrawCross(Mar_Val, Mar_Val, RED);
           continue;
         }
 
@@ -445,14 +449,8 @@ void TP_Adjust(void) {
         Dsqrt = (float)Sqrt1 / Sqrt2;
         if (Dsqrt < 0.95 || Dsqrt > 1.05) {
           DEBUG("Adjust Y direction");
+          TP_Adjust_HandleFail(Mar_Val, XYpoint_Arr, Dsqrt);
           cnt = 0;
-          TP_ShowInfo(XYpoint_Arr[0][0], XYpoint_Arr[0][1], XYpoint_Arr[1][0],
-                      XYpoint_Arr[1][1], XYpoint_Arr[2][0], XYpoint_Arr[2][1],
-                      XYpoint_Arr[3][0], XYpoint_Arr[3][1], Dsqrt * 100);
-          Driver_Delay_ms(1000);
-          TP_DrawCross(sLCD_DIS.LCD_Dis_Column - Mar_Val,
-                       sLCD_DIS.LCD_Dis_Page - Mar_Val, WHITE);
-          TP_DrawCross(Mar_Val, Mar_Val, RED);
           continue;
         } //
 
@@ -472,14 +470,8 @@ void TP_Adjust(void) {
         Dsqrt = (float)Sqrt1 / Sqrt2;
         if (Dsqrt < 0.95 || Dsqrt > 1.05) {
           DEBUG("Adjust diagonal direction");
+          TP_Adjust_HandleFail(Mar_Val, XYpoint_Arr, Dsqrt);
           cnt = 0;
-          TP_ShowInfo(XYpoint_Arr[0][0], XYpoint_Arr[0][1], XYpoint_Arr[1][0],
-                      XYpoint_Arr[1][1], XYpoint_Arr[2][0], XYpoint_Arr[2][1],
-                      XYpoint_Arr[3][0], XYpoint_Arr[3][1], Dsqrt * 100);
-          Driver_Delay_ms(1000);
-          TP_DrawCross(sLCD_DIS.LCD_Dis_Column - Mar_Val,
-                       sLCD_DIS.LCD_Dis_Page - Mar_Val, WHITE);
-          TP_DrawCross(Mar_Val, Mar_Val, RED);
           continue;
         }
 
@@ -668,21 +660,26 @@ void TP_DrawBoard(void) {
   //  sTP_DEV.chStatus &= ~(1 << 6);
   TP_Scan(0);
   if (sTP_DEV.chStatus & TP_PRESS_DOWN) { // Press the button
-    // Horizontal screen
+    // Determine whether the law is legal
     if (sTP_Draw.Xpoint < sLCD_DIS.LCD_Dis_Column &&
-        // Determine whether the law is legal
         sTP_Draw.Ypoint < sLCD_DIS.LCD_Dis_Page) {
+
+      // Shared UI buttons check
+      if (sTP_Draw.Xpoint > (sLCD_DIS.LCD_Dis_Column - 60) &&
+          sTP_Draw.Ypoint < 16) { // Clear Board
+        TP_Dialog();
+        return;
+      } else if (sTP_Draw.Xpoint > (sLCD_DIS.LCD_Dis_Column - 120) &&
+                 sTP_Draw.Xpoint < (sLCD_DIS.LCD_Dis_Column - 80) &&
+                 sTP_Draw.Ypoint < 24) { // afresh adjustment
+        TP_Adjust();
+        TP_Dialog();
+        return;
+      }
+
       // Judgment is horizontal screen
       if (sLCD_DIS.LCD_Dis_Column > sLCD_DIS.LCD_Dis_Page) {
-        if (sTP_Draw.Xpoint > (sLCD_DIS.LCD_Dis_Column - 60) &&
-            sTP_Draw.Ypoint < 16) { // Clear Board
-          TP_Dialog();
-        } else if (sTP_Draw.Xpoint > (sLCD_DIS.LCD_Dis_Column - 120) &&
-                   sTP_Draw.Xpoint < (sLCD_DIS.LCD_Dis_Column - 80) &&
-                   sTP_Draw.Ypoint < 24) { // afresh adjustment
-          TP_Adjust();
-          TP_Dialog();
-        } else if (sTP_Draw.Xpoint > (sLCD_DIS.LCD_Dis_Column - 50) &&
+        if (sTP_Draw.Xpoint > (sLCD_DIS.LCD_Dis_Column - 50) &&
                    sTP_Draw.Ypoint > 20 && sTP_Draw.Ypoint < 70) {
           sTP_Draw.Color = BLUE;
         } else if (sTP_Draw.Xpoint > (sLCD_DIS.LCD_Dis_Column - 50) &&
@@ -711,15 +708,7 @@ void TP_DrawBoard(void) {
         }
         // Vertical screen
       } else {
-        if (sTP_Draw.Xpoint > (sLCD_DIS.LCD_Dis_Column - 60) &&
-            sTP_Draw.Ypoint < 16) { // Clear Board
-          TP_Dialog();
-        } else if (sTP_Draw.Xpoint > (sLCD_DIS.LCD_Dis_Column - 120) &&
-                   sTP_Draw.Xpoint < (sLCD_DIS.LCD_Dis_Column - 80) &&
-                   sTP_Draw.Ypoint < 24) { // afresh adjustment
-          TP_Adjust();
-          TP_Dialog();
-        } else if (sTP_Draw.Xpoint > 20 && sTP_Draw.Xpoint < 70 &&
+        if (sTP_Draw.Xpoint > 20 && sTP_Draw.Xpoint < 70 &&
                    sTP_Draw.Ypoint > 20 && sTP_Draw.Ypoint < 70) {
           sTP_Draw.Color = BLUE;
         } else if (sTP_Draw.Xpoint > 80 && sTP_Draw.Xpoint < 130 &&
