@@ -14,3 +14,6 @@
 ## 2026-06-26 - Loop optimization in continuous drawing functions
 **Learning:** In loop-based drawing functions like `DrawTrendChart`, operations executed on each iteration (e.g. up to 400 points) can cause CPU bottlenecks on embedded systems. Specifically, re-calculating identical math operations across consecutive loop boundaries and performing division within the loop wastes CPU cycles.
 **Action:** Always pre-calculate constant scaling factors outside the loop and cache the end-coordinates of the previous iteration to reuse as the start-coordinates of the next.
+## 2026-06-26 - Bresenham Diagonal Line SPI Bottleneck in Trend Charts
+**Learning:** Bresenham's line algorithm for diagonal lines inherently draws point-by-point (`GUI_DrawPoint`), resulting in an O(dy) amount of individual SPI block-fill transactions (e.g., drawing 400 lines of dy=50 results in 20,000 SPI calls, causing severe main thread blocking and screen stutter).
+**Action:** When drawing step-like or continuous line graphs, replace diagonal lines with connecting orthogonal segments (vertical/horizontal lines). This leverages the existing O(1) block-fill optimization (`LCD_SetArealColor`) in the line drawing API for orthogonal lines, reducing SPI overhead from O(N pixels) to O(1) per graph segment.
