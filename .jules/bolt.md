@@ -17,3 +17,6 @@
 ## 2026-06-26 - Bresenham Diagonal Line SPI Bottleneck in Trend Charts
 **Learning:** Bresenham's line algorithm for diagonal lines inherently draws point-by-point (`GUI_DrawPoint`), resulting in an O(dy) amount of individual SPI block-fill transactions (e.g., drawing 400 lines of dy=50 results in 20,000 SPI calls, causing severe main thread blocking and screen stutter).
 **Action:** When drawing step-like or continuous line graphs, replace diagonal lines with connecting orthogonal segments (vertical/horizontal lines). This leverages the existing O(1) block-fill optimization (`LCD_SetArealColor`) in the line drawing API for orthogonal lines, reducing SPI overhead from O(N pixels) to O(1) per graph segment.
+## 2024-07-17 - Redundant SPI Calls in Single-Pixel Line Drawings
+**Learning:** Drawing step-like graphs pixel-by-pixel or using single-pixel wide horizontal line segments generates excessive `LCD_SetArealColor` block-fill operations (e.g., 400 separate SPI transactions for a flat graph of 400 points). This creates significant CPU bottlenecking on the main thread.
+**Action:** When drawing contiguous horizontal lines in graphs or UI elements, always track the start point of a horizontal run and draw it using a single `GUI_DrawLine` (which maps to a single `LCD_SetArealColor`) when the run ends (i.e., when the Y coordinate changes or the loop completes).

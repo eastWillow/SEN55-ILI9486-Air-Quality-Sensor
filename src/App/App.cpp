@@ -266,21 +266,27 @@ static void DrawTrendChart() {
   if (trendCount > 0) {
     float scale = chartH / range;
     int y1 = chartY + chartH - static_cast<int>((pm25History[0] - minVal) * scale);
+    int runStartX = chartX;
 
     for (int i = 0; i < trendCount - 1; i++) {
-      int x1 = chartX + i;
-      int x2 = x1 + 1;
+      int x2 = chartX + i + 1;
       int y2 = chartY + chartH - static_cast<int>((pm25History[i + 1] - minVal) * scale);
 
-      // Optimization: Replace diagonal Bresenham line with orthogonal segments
-      // to utilize O(1) LCD_SetArealColor block-fill instead of O(dy) pixel-by-pixel draws.
       if (y1 != y2) {
-        GUI_DrawLine(x1, y1, x1, y2, RED, LINE_SOLID, DOT_PIXEL_1X1);
-      }
-      GUI_DrawLine(x1, y2, x2, y2, RED, LINE_SOLID, DOT_PIXEL_1X1);
+        // Optimization: Group contiguous horizontal segments with the same Y-coordinate
+        // into a single GUI_DrawLine call to avoid N separate LCD_SetArealColor block-fills.
+        GUI_DrawLine(runStartX, y1, x2 - 1, y1, RED, LINE_SOLID, DOT_PIXEL_1X1);
 
-      y1 = y2; // Cache for next iteration
+        // Draw the vertical jump
+        GUI_DrawLine(x2 - 1, y1, x2 - 1, y2, RED, LINE_SOLID, DOT_PIXEL_1X1);
+
+        y1 = y2; // Cache for next iteration
+        runStartX = x2 - 1;
+      }
     }
+
+    // Draw the final horizontal run
+    GUI_DrawLine(runStartX, y1, chartX + trendCount - 1, y1, RED, LINE_SOLID, DOT_PIXEL_1X1);
   }
 }
 
