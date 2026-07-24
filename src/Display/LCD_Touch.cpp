@@ -37,6 +37,12 @@ extern LCD_DIS sLCD_DIS;
 static TP_DEV sTP_DEV;
 static TP_DRAW sTP_Draw;
 
+static double CalculateDistance(int16_t x1, int16_t y1, int16_t x2, int16_t y2) {
+    int32_t dx = abs((int16_t)(x1 - x2));
+    int32_t dy = abs((int16_t)(y1 - y2));
+    return sqrt(dx * dx + dy * dy);
+}
+
 #ifdef ARDUINO
 // =================================================================================
 // ARDUINO IMPLEMENTATION (Hardware SPI)
@@ -364,7 +370,6 @@ static void TP_Adjust_HandleFail(unsigned char Mar_Val, const POINT XYpoint_Arr[
 void TP_Adjust(void) {
   unsigned char cnt = 0;
   POINT XYpoint_Arr[4][2];
-  uint32_t Dx, Dy;
   POINT Sqrt1, Sqrt2;
   float Dsqrt;
 
@@ -413,17 +418,8 @@ void TP_Adjust(void) {
       case 4:
 
         // 1.Compare the X direction
-        Dx = abs((int16_t)(XYpoint_Arr[0][0] - XYpoint_Arr[1][0])); // x1 - x2
-        Dy = abs((int16_t)(XYpoint_Arr[0][1] - XYpoint_Arr[1][1])); // y1 - y2
-        Dx *= Dx;
-        Dy *= Dy;
-        Sqrt1 = sqrt(Dx + Dy);
-
-        Dx = abs((int16_t)(XYpoint_Arr[2][0] - XYpoint_Arr[3][0])); // x3 - x4
-        Dy = abs((int16_t)(XYpoint_Arr[2][1] - XYpoint_Arr[3][1])); // y3 - y4
-        Dx *= Dx;
-        Dy *= Dy;
-        Sqrt2 = sqrt(Dx + Dy);
+        Sqrt1 = CalculateDistance(XYpoint_Arr[0][0], XYpoint_Arr[0][1], XYpoint_Arr[1][0], XYpoint_Arr[1][1]);
+        Sqrt2 = CalculateDistance(XYpoint_Arr[2][0], XYpoint_Arr[2][1], XYpoint_Arr[3][0], XYpoint_Arr[3][1]);
 
         Dsqrt = (float)Sqrt1 / Sqrt2;
         if (Dsqrt < 0.95 || Dsqrt > 1.05 || Sqrt1 == 0 || Sqrt2 == 0) {
@@ -434,17 +430,8 @@ void TP_Adjust(void) {
         }
 
         // 2.Compare the Y direction
-        Dx = abs((int16_t)(XYpoint_Arr[0][0] - XYpoint_Arr[2][0])); // x1 - x3
-        Dy = abs((int16_t)(XYpoint_Arr[0][1] - XYpoint_Arr[2][1])); // y1 - y3
-        Dx *= Dx;
-        Dy *= Dy;
-        Sqrt1 = sqrt(Dx + Dy);
-
-        Dx = abs((int16_t)(XYpoint_Arr[1][0] - XYpoint_Arr[3][0])); // x2 - x4
-        Dy = abs((int16_t)(XYpoint_Arr[1][1] - XYpoint_Arr[3][1])); // y2 - y4
-        Dx *= Dx;
-        Dy *= Dy;
-        Sqrt2 = sqrt(Dx + Dy); //
+        Sqrt1 = CalculateDistance(XYpoint_Arr[0][0], XYpoint_Arr[0][1], XYpoint_Arr[2][0], XYpoint_Arr[2][1]);
+        Sqrt2 = CalculateDistance(XYpoint_Arr[1][0], XYpoint_Arr[1][1], XYpoint_Arr[3][0], XYpoint_Arr[3][1]);
 
         Dsqrt = (float)Sqrt1 / Sqrt2;
         if (Dsqrt < 0.95 || Dsqrt > 1.05) {
@@ -455,17 +442,8 @@ void TP_Adjust(void) {
         } //
 
         // 3.Compare diagonal
-        Dx = abs((int16_t)(XYpoint_Arr[1][0] - XYpoint_Arr[2][0])); // x1 - x3
-        Dy = abs((int16_t)(XYpoint_Arr[1][1] - XYpoint_Arr[2][1])); // y1 - y3
-        Dx *= Dx;
-        Dy *= Dy;
-        Sqrt1 = sqrt(Dx + Dy); //;
-
-        Dx = abs((int16_t)(XYpoint_Arr[0][0] - XYpoint_Arr[3][0])); // x2 - x4
-        Dy = abs((int16_t)(XYpoint_Arr[0][1] - XYpoint_Arr[3][1])); // y2 - y4
-        Dx *= Dx;
-        Dy *= Dy;
-        Sqrt2 = sqrt(Dx + Dy); //
+        Sqrt1 = CalculateDistance(XYpoint_Arr[1][0], XYpoint_Arr[1][1], XYpoint_Arr[2][0], XYpoint_Arr[2][1]);
+        Sqrt2 = CalculateDistance(XYpoint_Arr[0][0], XYpoint_Arr[0][1], XYpoint_Arr[3][0], XYpoint_Arr[3][1]);
 
         Dsqrt = (float)Sqrt1 / Sqrt2;
         if (Dsqrt < 0.95 || Dsqrt > 1.05) {
