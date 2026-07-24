@@ -5,6 +5,7 @@
 #include "../Display/LCD_GUI.h"
 #include "../Display/LCD_Touch.h"
 #include <stdio.h>
+#include <string.h>
 
 #if defined(ARDUINO)
 #include <Arduino.h>
@@ -53,7 +54,7 @@ void RecordTrendData(float pm25) {
     pm25History[trendCount++] = pm25;
   } else {
     // Optimization: Use memmove for O(1) bulk memory shift instead of O(N) loop
-    std::memmove(pm25History, pm25History + 1, (TREND_MAX_POINTS - 1) * sizeof(float));
+    memmove(pm25History, pm25History + 1, (TREND_MAX_POINTS - 1) * sizeof(float));
     pm25History[TREND_MAX_POINTS - 1] = pm25;
   }
 }
