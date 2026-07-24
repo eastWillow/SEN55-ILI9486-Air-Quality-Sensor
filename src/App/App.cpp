@@ -52,9 +52,8 @@ void RecordTrendData(float pm25) {
   if (trendCount < TREND_MAX_POINTS) {
     pm25History[trendCount++] = pm25;
   } else {
-    for (int i = 0; i < TREND_MAX_POINTS - 1; i++) {
-      pm25History[i] = pm25History[i + 1];
-    }
+    // Optimization: Use memmove for O(1) bulk memory shift instead of O(N) loop
+    std::memmove(pm25History, pm25History + 1, (TREND_MAX_POINTS - 1) * sizeof(float));
     pm25History[TREND_MAX_POINTS - 1] = pm25;
   }
 }
