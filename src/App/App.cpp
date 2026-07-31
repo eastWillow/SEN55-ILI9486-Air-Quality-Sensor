@@ -275,7 +275,10 @@ static void DrawTrendChart() {
       if (y1 != y2) {
         // Optimization: Group contiguous horizontal segments with the same Y-coordinate
         // into a single GUI_DrawLine call to avoid N separate LCD_SetArealColor block-fills.
-        GUI_DrawLine(runStartX, y1, x2 - 1, y1, RED, LINE_SOLID, DOT_PIXEL_1X1);
+        // Skip drawing horizontal segments of length 1, as the subsequent vertical jump already covers that pixel.
+        if (runStartX < x2 - 1) {
+          GUI_DrawLine(runStartX, y1, x2 - 1, y1, RED, LINE_SOLID, DOT_PIXEL_1X1);
+        }
 
         // Draw the vertical jump
         GUI_DrawLine(x2 - 1, y1, x2 - 1, y2, RED, LINE_SOLID, DOT_PIXEL_1X1);
