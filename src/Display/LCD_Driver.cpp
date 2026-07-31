@@ -54,8 +54,7 @@ void LCD_WriteData(uint8_t Data)
 {
     LCD_DC_1;
     LCD_CS_0;
-    SPI4W_Write_Byte(Data >> 8);
-    SPI4W_Write_Byte(Data & 0XFF);
+    SPI4W_Write_Byte(Data);
     LCD_CS_1;
 }
 
