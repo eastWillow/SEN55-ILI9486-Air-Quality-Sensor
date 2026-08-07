@@ -280,6 +280,7 @@ void GUI_DrawCircle(POINT X_Center, POINT Y_Center, LENGTH Radius,
 void GUI_DisChar(POINT Xpoint, POINT Ypoint, const char Acsii_Char,
                  sFONT* Font, COLOR Color_Background, COLOR Color_Foreground)
 {
+  if (Font == NULL) return;
   POINT Page, Column;
 
   if (Xpoint > sLCD_DIS.LCD_Dis_Column || Ypoint > sLCD_DIS.LCD_Dis_Page) {
@@ -350,6 +351,7 @@ void GUI_DisChar(POINT Xpoint, POINT Ypoint, const char Acsii_Char,
 void GUI_DisString_EN(POINT Xstart, POINT Ystart, const char * pString,
                       sFONT* Font, COLOR Color_Background, COLOR Color_Foreground )
 {
+  if (pString == NULL || Font == NULL) return;
   POINT Xpoint = Xstart;
   POINT Ypoint = Ystart;
 
@@ -384,6 +386,7 @@ void GUI_DisString_EN(POINT Xstart, POINT Ystart, const char * pString,
 
 void GUI_IntToStr(int32_t Nummber, uint8_t* Str_Array)
 {
+  if (Str_Array == NULL) return;
   snprintf(reinterpret_cast<char*>(Str_Array), ARRAY_LEN, "%ld", static_cast<long>(Nummber));
 }
 
@@ -400,6 +403,7 @@ void GUI_IntToStr(int32_t Nummber, uint8_t* Str_Array)
 void GUI_DisNum(POINT Xpoint, POINT Ypoint, int32_t Nummber,
                 sFONT* Font, COLOR Color_Background, COLOR Color_Foreground )
 {
+  if (Font == NULL) return;
   uint8_t Str_Array[ARRAY_LEN] = {0};
   uint8_t *pStr = Str_Array;
 
@@ -430,6 +434,7 @@ void GUI_DisNum(POINT Xpoint, POINT Ypoint, int32_t Nummber,
 void GUI_Disbitmap(POINT Xpoint, POINT Ypoint, const unsigned char *pMap,
                    POINT Width, POINT Height)
 {
+  if (pMap == NULL) return;
   POINT i, j, byteWidth = (Width + 7) / 8;
   for (j = 0; j < Height; j++) {
     int16_t startCol = -1;
@@ -465,6 +470,7 @@ void GUI_Disbitmap(POINT Xpoint, POINT Ypoint, const unsigned char *pMap,
 ******************************************************************************/
 void GUI_DisGrayMap(POINT Xpoint, POINT Ypoint, const unsigned char *pBmp)
 {
+  if (pBmp == NULL) return;
   //Get the Map header Gray, width, height
   char Gray;
   Gray = *(pBmp + 1);
@@ -541,6 +547,7 @@ sFONT *GUI_GetFontSize(POINT Dx, POINT Dy)
 void GUI_Showtime(POINT Xstart, POINT Ystart, POINT Xend, POINT Yend,
                   DEV_TIME *pTime, COLOR Color)
 {
+  if (pTime == NULL) return;
   const uint8_t value[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
   sFONT *Font = NULL;
 
