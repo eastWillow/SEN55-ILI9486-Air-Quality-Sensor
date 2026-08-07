@@ -10,3 +10,8 @@
 **Vulnerability:** The `GUI_DisChar` function in `src/Display/LCD_GUI.cpp` calculated the font array offset without checking if the ASCII character provided was within the printable range (`' '` to `'~'`). Non-printable characters (like newlines or values > 127) caused an integer overflow/underflow, resulting in out-of-bounds memory reads from the `Font->table`.
 **Learning:** Array index calculations derived directly from user input or external data (like characters in a string) must always be bounds-checked before accessing memory.
 **Prevention:** Added a boundary check to map any out-of-bounds characters to a safe fallback character (e.g., `'?'`) before performing index math.
+
+## 2026-03-01 - Add NULL pointer validation to LCD GUI
+**Vulnerability:** Missing NULL pointer validation in embedded UI libraries causing potential Denial of Service (device crash).
+**Learning:** Embedded systems are susceptible to crashes if pointers are not verified before dereferencing.
+**Prevention:** Validate all pointers passed as arguments in public APIs before dereferencing them.
