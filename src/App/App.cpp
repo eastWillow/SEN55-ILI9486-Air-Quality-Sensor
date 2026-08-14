@@ -117,12 +117,16 @@ static void displayValue(uint16_t x, uint16_t y, float value,
   // Set the starting X coordinate of the value (consistent with the coordinates below)
   uint16_t valX = x + 150;
 
+  size_t prevLen = 0;
+  size_t newLen = strlen(valStr);
+
   // 2. Check memoization cache
   for (int i = 0; i < textCacheCount; i++) {
     if (textCache[i].x == valX && textCache[i].y == y) {
       if (strncmp(textCache[i].text, valStr, sizeof(textCache[i].text)) == 0) {
         return; // Value unchanged, skip redraw
       } else {
+        prevLen = strlen(textCache[i].text);
         // Update cache
         strncpy(textCache[i].text, valStr, sizeof(textCache[i].text));
         textCache[i].text[sizeof(textCache[i].text) - 1] = '\0';
@@ -152,9 +156,14 @@ static void displayValue(uint16_t x, uint16_t y, float value,
   // with the background color to clear the old content
   // ---------------------------------------------------------
 
-  // Set the width to be cleared (e.g., 120 pixels, adjust according to value length)
-  // If the value contains a long unit, this width may need to be increased
+  // Calculate the width to be cleared dynamically based on text length to minimize SPI overhead.
+  // If the string was not found in the cache (prevLen == 0), fallback to a safe 150px clear
+  // to ensure any static placeholders are fully overwritten.
   uint16_t clearWidth = 150;
+  if (prevLen > 0) {
+    size_t maxLen = (prevLen > newLen) ? prevLen : newLen;
+    clearWidth = static_cast<uint16_t>(maxLen * Font20.Width);
+  }
 
   // Simple boundary check to prevent errors caused by exceeding the screen edge (480)
   if (valX >= 480) {
