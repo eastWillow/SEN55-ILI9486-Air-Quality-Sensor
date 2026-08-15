@@ -49,6 +49,30 @@ struct TextCache {
 TextCache textCache[MAX_TEXT_CACHE];
 int textCacheCount = 0;
 
+static bool checkAndUpdateCache(uint16_t x, uint16_t y, const char* text) {
+  for (int i = 0; i < textCacheCount; i++) {
+    if (textCache[i].x == x && textCache[i].y == y) {
+      if (strncmp(textCache[i].text, text, sizeof(textCache[i].text)) == 0) {
+        return false; // No change
+      } else {
+        strncpy(textCache[i].text, text, sizeof(textCache[i].text));
+        textCache[i].text[sizeof(textCache[i].text) - 1] = '\0';
+        return true; // Changed
+      }
+    }
+  }
+
+  // Not found in cache
+  if (textCacheCount < MAX_TEXT_CACHE) {
+    textCache[textCacheCount].x = x;
+    textCache[textCacheCount].y = y;
+    strncpy(textCache[textCacheCount].text, text, sizeof(textCache[textCacheCount].text));
+    textCache[textCacheCount].text[sizeof(textCache[textCacheCount].text) - 1] = '\0';
+    textCacheCount++;
+  }
+  return true; // New entry, needs draw
+}
+
 void RecordTrendData(float pm25) {
   if (trendCount < TREND_MAX_POINTS) {
     pm25History[trendCount++] = pm25;
@@ -118,33 +142,8 @@ static void displayValue(uint16_t x, uint16_t y, float value,
   uint16_t valX = x + 150;
 
   // 2. Check memoization cache
-  for (int i = 0; i < textCacheCount; i++) {
-    if (textCache[i].x == valX && textCache[i].y == y) {
-      if (strncmp(textCache[i].text, valStr, sizeof(textCache[i].text)) == 0) {
-        return; // Value unchanged, skip redraw
-      } else {
-        // Update cache
-        strncpy(textCache[i].text, valStr, sizeof(textCache[i].text));
-        textCache[i].text[sizeof(textCache[i].text) - 1] = '\0';
-        break;
-      }
-    }
-    if (i == textCacheCount - 1 && textCacheCount < MAX_TEXT_CACHE) {
-       textCache[textCacheCount].x = valX;
-       textCache[textCacheCount].y = y;
-       strncpy(textCache[textCacheCount].text, valStr, sizeof(textCache[textCacheCount].text));
-       textCache[textCacheCount].text[sizeof(textCache[textCacheCount].text) - 1] = '\0';
-       textCacheCount++;
-       break;
-    }
-  }
-
-  if (textCacheCount == 0) {
-     textCache[0].x = valX;
-     textCache[0].y = y;
-     strncpy(textCache[0].text, valStr, sizeof(textCache[0].text));
-     textCache[0].text[sizeof(textCache[0].text) - 1] = '\0';
-     textCacheCount++;
+  if (!checkAndUpdateCache(valX, y, valStr)) {
+    return; // Value unchanged, skip redraw
   }
 
   // ---------------------------------------------------------
