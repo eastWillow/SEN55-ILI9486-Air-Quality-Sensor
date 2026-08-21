@@ -49,12 +49,14 @@ struct TextCache {
 TextCache textCache[MAX_TEXT_CACHE];
 int textCacheCount = 0;
 
-static bool checkAndUpdateCache(uint16_t x, uint16_t y, const char* text) {
+static bool checkAndUpdateCache(uint16_t x, uint16_t y, const char* text, size_t* outPrevLen = nullptr) {
   for (int i = 0; i < textCacheCount; i++) {
     if (textCache[i].x == x && textCache[i].y == y) {
       if (strncmp(textCache[i].text, text, sizeof(textCache[i].text)) == 0) {
+        if (outPrevLen) *outPrevLen = strlen(textCache[i].text);
         return false; // No change
       } else {
+        if (outPrevLen) *outPrevLen = strlen(textCache[i].text);
         strncpy(textCache[i].text, text, sizeof(textCache[i].text));
         textCache[i].text[sizeof(textCache[i].text) - 1] = '\0';
         return true; // Changed
@@ -63,6 +65,7 @@ static bool checkAndUpdateCache(uint16_t x, uint16_t y, const char* text) {
   }
 
   // Not found in cache
+  if (outPrevLen) *outPrevLen = 0;
   if (textCacheCount < MAX_TEXT_CACHE) {
     textCache[textCacheCount].x = x;
     textCache[textCacheCount].y = y;
@@ -142,7 +145,8 @@ static void displayValue(uint16_t x, uint16_t y, float value,
   uint16_t valX = x + 150;
 
   // 2. Check memoization cache
-  if (!checkAndUpdateCache(valX, y, valStr)) {
+  size_t prevLen = 0;
+  if (!checkAndUpdateCache(valX, y, valStr, &prevLen)) {
     return; // Value unchanged, skip redraw
   }
 
@@ -154,6 +158,12 @@ static void displayValue(uint16_t x, uint16_t y, float value,
   // Set the width to be cleared (e.g., 120 pixels, adjust according to value length)
   // If the value contains a long unit, this width may need to be increased
   uint16_t clearWidth = 150;
+
+  if (prevLen > 0) {
+    size_t newLen = strlen(valStr);
+    size_t maxLen = prevLen > newLen ? prevLen : newLen;
+    clearWidth = maxLen * Font20.Width;
+  }
 
   // Simple boundary check to prevent errors caused by exceeding the screen edge (480)
   if (valX >= 480) {
