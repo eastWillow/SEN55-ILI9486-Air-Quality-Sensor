@@ -26,3 +26,6 @@
 ## 2024-07-18 - Redundant SPI Calls in 1-pixel Horizontal Chart Segments
 **Learning:** Drawing step-like graphs pixel-by-pixel generates excessive `LCD_SetArealColor` block-fill operations. When connecting diagonal data points with orthogonal segments (horizontal then vertical), horizontal segments of length 1 result in redundant SPI calls because the subsequent vertical line already covers that exact pixel.
 **Action:** When drawing contiguous horizontal lines in graphs, always skip drawing horizontal segments of length 1 (`runStartX < x2 - 1`). This avoids unnecessary SPI operations, as the starting pixel is already drawn by the preceding segment and the end pixel is drawn by the subsequent vertical jump.
+## 2024-05-25 - Dynamic Clearing Width Optimization
+**Learning:** Fixed-width block clears before text rendering (e.g., clearing 150 pixels every time) cause excessive SPI operations and redundant pixel draws when the text is short. This wastes CPU cycles and SPI bandwidth in embedded UIs.
+**Action:** When updating dynamically changing text, dynamically calculate the clearing rectangle width based on the maximum of the previously cached string length and the new string length. This ensures we only clear the necessary pixels, minimizing SPI overhead.
