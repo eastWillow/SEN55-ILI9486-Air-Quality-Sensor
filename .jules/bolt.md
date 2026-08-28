@@ -29,3 +29,6 @@
 ## 2024-05-25 - Dynamic Clearing Width Optimization
 **Learning:** Fixed-width block clears before text rendering (e.g., clearing 150 pixels every time) cause excessive SPI operations and redundant pixel draws when the text is short. This wastes CPU cycles and SPI bandwidth in embedded UIs.
 **Action:** When updating dynamically changing text, dynamically calculate the clearing rectangle width based on the maximum of the previously cached string length and the new string length. This ensures we only clear the necessary pixels, minimizing SPI overhead.
+## 2024-05-25 - Optimize DrawCircle with Line Blocks
+**Learning:** In `GUI_DrawCircle`, the `DRAW_FULL` branch previously used a nested loop that called `GUI_DrawPoint` 8 times per inner iteration, resulting in O(R^2) individual SPI operations. This pixel-by-pixel rendering causes severe main thread blocking in embedded displays.
+**Action:** Replace the 8 `GUI_DrawPoint` calls in the inner loop with 4 `GUI_DrawLine` calls that draw the full horizontal spans of the octants. This converts O(R^2) pixel writes into O(R) block fills (`LCD_SetArealColor`), drastically minimizing SPI overhead.

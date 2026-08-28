@@ -227,16 +227,12 @@ void GUI_DrawCircle(POINT X_Center, POINT Y_Center, LENGTH Radius,
 
   if (Draw_Fill == DRAW_FULL) {
     while (XCurrent <= YCurrent ) { //Realistic circles
-      for (int16_t sCountY = XCurrent; sCountY <= YCurrent; sCountY ++ ) {
-        GUI_DrawPoint(X_Center + XCurrent, Y_Center + sCountY, Color, DOT_PIXEL_DFT, DOT_STYLE_DFT );//1
-        GUI_DrawPoint(X_Center - XCurrent, Y_Center + sCountY, Color, DOT_PIXEL_DFT, DOT_STYLE_DFT );//2
-        GUI_DrawPoint(X_Center - sCountY, Y_Center + XCurrent, Color, DOT_PIXEL_DFT, DOT_STYLE_DFT );//3
-        GUI_DrawPoint(X_Center - sCountY, Y_Center - XCurrent, Color, DOT_PIXEL_DFT, DOT_STYLE_DFT );//4
-        GUI_DrawPoint(X_Center - XCurrent, Y_Center - sCountY, Color, DOT_PIXEL_DFT, DOT_STYLE_DFT );//5
-        GUI_DrawPoint(X_Center + XCurrent, Y_Center - sCountY, Color, DOT_PIXEL_DFT, DOT_STYLE_DFT );//6
-        GUI_DrawPoint(X_Center + sCountY, Y_Center - XCurrent, Color, DOT_PIXEL_DFT, DOT_STYLE_DFT );//7
-        GUI_DrawPoint(X_Center + sCountY, Y_Center + XCurrent, Color, DOT_PIXEL_DFT, DOT_STYLE_DFT );
-      }
+      // Draw horizontal lines to reduce SPI overhead compared to drawing points
+      GUI_DrawLine(X_Center - XCurrent, Y_Center + YCurrent, X_Center + XCurrent, Y_Center + YCurrent, Color, LINE_SOLID, DOT_PIXEL_DFT);
+      GUI_DrawLine(X_Center - XCurrent, Y_Center - YCurrent, X_Center + XCurrent, Y_Center - YCurrent, Color, LINE_SOLID, DOT_PIXEL_DFT);
+      GUI_DrawLine(X_Center - YCurrent, Y_Center + XCurrent, X_Center + YCurrent, Y_Center + XCurrent, Color, LINE_SOLID, DOT_PIXEL_DFT);
+      GUI_DrawLine(X_Center - YCurrent, Y_Center - XCurrent, X_Center + YCurrent, Y_Center - XCurrent, Color, LINE_SOLID, DOT_PIXEL_DFT);
+
       if (Esp < 0 )
         Esp += 4 * XCurrent + 6;
       else {
