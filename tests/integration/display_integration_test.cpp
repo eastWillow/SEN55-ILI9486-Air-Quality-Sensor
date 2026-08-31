@@ -1,3 +1,4 @@
+#include "LCD_GUI.h"
 #include "DEV_Config.h"
 #include "EmulatorEngine.h"
 #include "LCD_Driver_SDL.h"
@@ -353,4 +354,32 @@ TEST_F(DisplayIntegrationTest, CheckpointYAxisStability) {
   }
 
   engine.shutdown();
+}
+
+TEST_F(DisplayIntegrationTest, GUI_DrawCircle_BMP_Test) {
+  SensorMock sensor;
+  SystemTimeProvider timeProvider;
+  EmulatorEngine engine;
+  engine.initialize(&sensor, &timeProvider); // App_Setup uses sensor and time provider
+
+  // Clear and draw a circle manually
+  GUI_Clear(WHITE);
+  GUI_DrawCircle(240, 160, 50, RED, DRAW_FULL, DOT_PIXEL_1X1);
+
+  // Take screenshot
+  engine.captureScreenshot("actual_gui_drawcircle.bmp");
+
+  int diff = CompareWithReference("actual_gui_drawcircle.bmp", "gui_drawcircle.bmp");
+
+  if (diff == -2) {
+    std::cout << "[WARNING] Reference missing. Generated actual_gui_drawcircle.bmp."
+              << std::endl;
+    FAIL() << "Reference image missing: gui_drawcircle.bmp. Generated "
+              "actual_gui_drawcircle.bmp for manual inspection.";
+  } else if (diff == -1) {
+    FAIL() << "ImageMagick comparison failed. Is 'compare' tool installed?";
+  } else {
+    ASSERT_LE(diff, 0) << "GUI_DrawCircle mismatch! ("
+                       << diff << " pixels differ)";
+  }
 }
