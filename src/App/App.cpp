@@ -38,6 +38,7 @@ AppState pendingState = APP_STATE_MAIN;
 float pm25History[TREND_MAX_POINTS];
 int trendCount = 0;
 unsigned long lastTrendUpdate = 0;
+bool trendUpdated = false;
 
 // Text Memoization Cache
 struct TextCache {
@@ -84,6 +85,7 @@ void RecordTrendData(float pm25) {
     memmove(pm25History, pm25History + 1, (TREND_MAX_POINTS - 1) * sizeof(float));
     pm25History[TREND_MAX_POINTS - 1] = pm25;
   }
+  trendUpdated = true;
 }
 } // namespace
 
@@ -110,6 +112,7 @@ void App_ResetState() {
   appTime = nullptr;
   trendCount = 0;
   lastTrendUpdate = 0;
+  trendUpdated = false;
   inFeedback = false;
   textCacheCount = 0;
 }
@@ -491,9 +494,9 @@ void App_Loop(SensorIntf *sen5x) {
       }
 
       // If in TREND state, redraw chart if it was just updated
-      if (currentState == APP_STATE_TREND &&
-          (currentMillis - lastTrendUpdate < 100)) {
+      if (currentState == APP_STATE_TREND && trendUpdated) {
         DrawTrendChart();
+        trendUpdated = false;
       }
     }
   } else {

@@ -32,3 +32,6 @@
 ## 2024-05-25 - Optimize DrawCircle with Line Blocks
 **Learning:** In `GUI_DrawCircle`, the `DRAW_FULL` branch previously used a nested loop that called `GUI_DrawPoint` 8 times per inner iteration, resulting in O(R^2) individual SPI operations. This pixel-by-pixel rendering causes severe main thread blocking in embedded displays.
 **Action:** Replace the 8 `GUI_DrawPoint` calls in the inner loop with 4 `GUI_DrawLine` calls that draw the full horizontal spans of the octants. This converts O(R^2) pixel writes into O(R) block fills (`LCD_SetArealColor`), drastically minimizing SPI overhead.
+## 2024-07-26 - Prevent Redundant Full-Screen Redraws in UI Loops
+**Learning:** In embedded systems, triggering expensive rendering functions (like `DrawTrendChart`, which clears a large area and draws hundreds of lines) unconditionally on a time interval within the main event loop wastes immense CPU cycles and SPI bandwidth if the underlying data hasn't changed.
+**Action:** Decouple UI rendering from the main loop's check interval. Use boolean flags (e.g., `trendUpdated = true`) set during data mutation (e.g., `RecordTrendData`) to conditionally trigger the redraw in the main loop, immediately resetting the flag to `false`.
