@@ -1,0 +1,19 @@
+digraph gui_state_machine {
+s0 [label="s0"];
+s1 [label="s1"];
+s2 [label="s2"];
+s0 -> s1 [label="press_info/INFO"];
+s0 -> s2 [label="press_trend/TREND"];
+s0 -> s0 [label="press_back/MAIN"];
+s0 -> s0 [label="tick/MAIN"];
+s1 -> s1 [label="press_info/INFO"];
+s1 -> s1 [label="press_trend/INFO"];
+s1 -> s0 [label="press_back/MAIN"];
+s1 -> s1 [label="tick/INFO"];
+s2 -> s2 [label="press_info/TREND"];
+s2 -> s2 [label="press_trend/TREND"];
+s2 -> s0 [label="press_back/MAIN"];
+s2 -> s2 [label="tick/TREND"];
+__start0 [shape=none, label=""];
+__start0 -> s0 [label=""];
+}

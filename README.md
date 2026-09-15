@@ -4,6 +4,7 @@
 [![Unit Tests](https://github.com/eastwillowlearninglog/SEN55-ILI9486-Air-Quality-Sensor/actions/workflows/tests.yml/badge.svg)](https://github.com/eastwillowlearninglog/SEN55-ILI9486-Air-Quality-Sensor/actions/workflows/tests.yml)
 [![Emulator CI](https://github.com/eastwillowlearninglog/SEN55-ILI9486-Air-Quality-Sensor/actions/workflows/emulator.yml/badge.svg)](https://github.com/eastwillowlearninglog/SEN55-ILI9486-Air-Quality-Sensor/actions/workflows/emulator.yml)
 [![WASM Build](https://github.com/eastwillowlearninglog/SEN55-ILI9486-Air-Quality-Sensor/actions/workflows/wasm.yml/badge.svg)](https://github.com/eastwillowlearninglog/SEN55-ILI9486-Air-Quality-Sensor/actions/workflows/wasm.yml)
+[![AALpy GUI Regression CI](https://github.com/eastwillowlearninglog/SEN55-ILI9486-Air-Quality-Sensor/actions/workflows/aalpy-gui-regression.yml/badge.svg)](https://github.com/eastwillowlearninglog/SEN55-ILI9486-Air-Quality-Sensor/actions/workflows/aalpy-gui-regression.yml)
 
 ## Main Goal
 
@@ -183,6 +184,7 @@ All test workflows are in `.github/workflows/`:
 - **`tests.yml`**: Component tests (CoreLib validation)
 - **`emulator.yml`**: Smoke tests (binary execution)
 - **`integration-test.yml`**: Integration tests (visual regression)
+- **`aalpy-gui-regression.yml`**: Model-based AALpy GUI State & Visual Regression
 - **`arduino.yml`**: Compilation checks (no xvfb-run needed)
 - **`wasm.yml`**: WASM build and deployment (no xvfb-run needed)
 
@@ -242,3 +244,26 @@ xvfb-run -a ./tests/display_integration_test
 
 **Documentation**: See `openspec/specs/display-integration-test/spec.md` for detailed requirements.
 
+---
+
+### 4. AALpy Active Learning & GUI State Machine Regression
+
+The project supports active automata learning (L* algorithm via [AALpy](https://github.com/aalpy/aalpy)) to automatically explore the GUI state machine, generate golden sample screenshots for each state, and run model-based GUI regression tests in CI/CD.
+
+#### Workflow Phase 1: Learn State Machine & Update Golden Samples
+When UI features or state flows change, run the learner script to explore the GUI state machine, output the DOT visualization (`tests/integration/gui_state_machine.dot`), and export golden sample screenshots (`aalpy_golden_samples.json`):
+
+```bash
+# Build SUL driver
+mkdir -p build && cd build && cmake .. && cmake --build . --target aalpy_sul_driver
+
+# Run AALpy active learning
+xvfb-run python3 scripts/aalpy_gui_learner.py
+```
+
+#### Workflow Phase 2: CI Model-Based GUI Regression
+In CI or pre-commit checks, run the regression script to replay state sequences and compare actual rendering against Golden Samples:
+
+```bash
+xvfb-run python3 scripts/aalpy_gui_regression.py
+```
