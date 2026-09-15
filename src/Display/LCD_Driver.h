@@ -1,3 +1,17 @@
+/*****************************************************************************
+* | File      	:	LCD_Driver.h
+* | Author      :   Waveshare team
+* | Function    :	ILI9486 Drive function
+* | Info        :
+*   Image scanning:
+*      Please use progressive scanning to generate images or fonts
+*----------------
+* |	This version:   V1.0
+* | Date        :   2018-01-11
+* | Info        :   Basic version
+*
+******************************************************************************/
+
 /**************************Intermediate driver layer**************************/
 
 #ifndef __LCD_DRIVER_H

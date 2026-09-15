@@ -4,6 +4,14 @@
  * Waveshare). Used under assumption of compatibility or fair use as per user
  * instruction (Option B).
  */
+/******************************************************************************
+**************************Hardware interface layer*****************************
+* | file          :   DEV_Config.h
+* | version     :   V1.0
+* | date        :   2017-12-11
+* | function    :
+    Provide the hardware underlying interface
+******************************************************************************/
 #ifndef _DEV_CONFIG_H_
 #define _DEV_CONFIG_H_
 

@@ -3,6 +3,15 @@
  * Original License: No explicit open-source license found (Copyright Waveshare).
  * Used under assumption of compatibility or fair use as per user instruction (Option B).
  */
+/*****************************************************************************
+* | File      	:	LCD_Touch.h
+* | Author      :   Waveshare team
+* | Function    :	LCD Touch Pad Driver and Draw
+* | Info        :   Basic version
+*
+* | Info        :   Basic version
+*
+******************************************************************************/
 #ifndef __LCD_TOUCH_H_
 #define __LCD_TOUCH_H_
 

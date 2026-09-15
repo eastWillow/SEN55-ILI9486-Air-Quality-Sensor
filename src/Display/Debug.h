@@ -3,6 +3,15 @@
  * Original License: No explicit open-source license found (Copyright Waveshare).
  * Used under assumption of compatibility or fair use as per user instruction (Option B).
  */
+/*****************************************************************************
+* | File      	:	Debug.h
+* | Author      :   Waveshare team
+* | Function    :	debug with prntf
+* | Info        :   Basic version
+*
+* | Info        :   Basic version
+*
+******************************************************************************/
 #ifndef __DEBUG_H
 #define __DEBUG_H
 
