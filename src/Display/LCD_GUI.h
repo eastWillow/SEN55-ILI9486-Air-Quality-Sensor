@@ -1,19 +1,3 @@
-/*****************************************************************************
-* | File      	:	LCD_GUI.h
-* | Author      :   Waveshare team
-* | Function    :	Achieve drawing: draw points, lines, boxes, circles and
-*                   their size, solid dotted line, solid rectangle hollow
-*					rectangle, solid circle hollow circle.
-* | Info        :
-*   Achieve display characters: Display a single character, string, number
-*   Achieve time display: adaptive size display time minutes and seconds
-*----------------
-* |	This version:   V1.0
-* | Date        :   2017-08-16
-* | Info        :   Basic version
-*
-******************************************************************************/
-
 /****************************Upper application layer**************************/
 #ifndef __LCD_GUI_H
 #define __LCD_GUI_H

@@ -1,17 +1,3 @@
-/*****************************************************************************
-* | File      	:	LCD_Driver.h
-* | Author      :   Waveshare team
-* | Function    :	ILI9486 Drive function
-* | Info        :
-*   Image scanning:
-*      Please use progressive scanning to generate images or fonts
-*----------------
-* |	This version:   V1.0
-* | Date        :   2018-01-11
-* | Info        :   Basic version
-*
-******************************************************************************/
-
 /**************************Intermediate driver layer**************************/
 
 #ifndef __LCD_DRIVER_H
@@ -19,15 +5,15 @@
 
 #include "DEV_Config.h"
 
-#define	COLOR				uint16_t		//The variable type of the color (unsigned short) 
-#define	POINT				uint16_t		//The type of coordinate (unsigned short) 
-#define	LENGTH				uint16_t		//The type of coordinate (unsigned short) 
+#define	COLOR				uint16_t		//The variable type of the color (unsigned short)
+#define	POINT				uint16_t		//The type of coordinate (unsigned short)
+#define	LENGTH				uint16_t		//The type of coordinate (unsigned short)
 
 /********************************************************************************
 function:
 		Define the full screen height length of the display
 ********************************************************************************/
-#define LCD_X_MAXPIXEL  480  //LCD width maximum memory 
+#define LCD_X_MAXPIXEL  480  //LCD width maximum memory
 #define LCD_Y_MAXPIXEL  320 //LCD height maximum memory
 #define LCD_X	 0
 #define LCD_Y	 0
