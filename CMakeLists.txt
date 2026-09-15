@@ -59,11 +59,17 @@ else()
     endif()
 endif()
 
-# Create the executable
+# Create the main executable
 add_executable(DisplayEmulator main_pc.cpp)
 
 # Link the executable against CoreLib
 target_link_libraries(DisplayEmulator PRIVATE CoreLib)
+
+if(NOT EMSCRIPTEN)
+    # AALpy SUL Driver Executable
+    add_executable(aalpy_sul_driver src/App/aalpy_sul_driver.cpp)
+    target_link_libraries(aalpy_sul_driver PRIVATE CoreLib)
+endif()
 
 if(NOT EMSCRIPTEN)
     enable_testing()

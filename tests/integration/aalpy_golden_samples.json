@@ -1,0 +1,12 @@
+{
+  "discovered_states": [
+    "s0",
+    "s1",
+    "s2"
+  ],
+  "state_screenshots": {
+    "MAIN": "aalpy_main.bmp",
+    "INFO": "aalpy_info.bmp",
+    "TREND": "aalpy_trend.bmp"
+  }
+}
