@@ -5,8 +5,11 @@
 *                   their size, solid dotted line, solid rectangle hollow
 *					rectangle, solid circle hollow circle.
 * | Info        :
-* | Info        :   Basic version
-*
+*   Achieve display characters: Display a single character, string, number
+*   Achieve time display: adaptive size display time minutes and seconds
+*----------------
+* |	This version:   V1.0
+* | Date        :   2017-08-16
 * | Info        :   Basic version
 *
 ******************************************************************************/

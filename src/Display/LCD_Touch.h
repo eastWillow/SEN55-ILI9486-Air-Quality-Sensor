@@ -7,8 +7,12 @@
 * | File      	:	LCD_Touch.h
 * | Author      :   Waveshare team
 * | Function    :	LCD Touch Pad Driver and Draw
-* | Info        :   Basic version
-*
+* | Info        :
+*   Image scanning
+*      Please use progressive scanning to generate images or fonts
+*----------------
+* |	This version:   V1.0
+* | Date        :   2017-08-16
 * | Info        :   Basic version
 *
 ******************************************************************************/

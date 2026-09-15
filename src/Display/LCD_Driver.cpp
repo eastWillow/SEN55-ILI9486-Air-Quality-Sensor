@@ -58,6 +58,10 @@ void LCD_WriteData(uint8_t Data)
     LCD_CS_1;
 }
 
+/*******************************************************************************
+function:
+		Write register data
+*******************************************************************************/
 static void LCD_Write_AllData(uint16_t Data, uint32_t DataLen)
 {
     uint32_t i;
@@ -70,6 +74,10 @@ static void LCD_Write_AllData(uint16_t Data, uint32_t DataLen)
     LCD_CS_1;
 }
 
+/*******************************************************************************
+function:
+		Common register initialization
+*******************************************************************************/
 static void LCD_InitReg(void)
 {
     LCD_WriteReg(0XF9);
@@ -333,17 +341,6 @@ void LCD_SetPointlColor( POINT Xpoint, POINT Ypoint, COLOR Color)
         LCD_SetColor(Color, 1, 1);
     }
 }
-
-/********************************************************************************
-function:	Fill the area with the color
-parameter:
-	Xstart :   Start point x coordinate
-	Ystart :   Start point y coordinate
-	Xend   :   End point coordinates
-	Yend   :   End point coordinates
-	Color  :   Set the color
-********************************************************************************/
-
 
 /********************************************************************************
 function:
