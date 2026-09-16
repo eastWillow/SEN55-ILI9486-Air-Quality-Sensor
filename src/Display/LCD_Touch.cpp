@@ -289,14 +289,6 @@ static bool TP_Read_TwiceADC(POINT *pXCh_Adc, POINT *pYCh_Adc) {
 }
 #endif
 
-/*******************************************************************************
-  function:
-        Draw Cross
-  parameter:
-            Xpoint :    The x coordinate of the point
-            Ypoint :    The y coordinate of the point
-            Color  :    Set color
-*******************************************************************************/
 static void TP_DrawCross(POINT Xpoint, POINT Ypoint, COLOR Color) {
   GUI_DrawLine(Xpoint - 12, Ypoint, Xpoint + 12, Ypoint, Color, LINE_SOLID,
                DOT_PIXEL_1X1);
@@ -306,16 +298,6 @@ static void TP_DrawCross(POINT Xpoint, POINT Ypoint, COLOR Color) {
   GUI_DrawCircle(Xpoint, Ypoint, 6, Color, DRAW_EMPTY, DOT_PIXEL_1X1);
 }
 
-/*******************************************************************************
-  function:
-        The corresponding ADC value is displayed on the LC
-  parameter:
-            (Xpoint0 ,Xpoint0): The coordinates of the first point
-            (Xpoint1 ,Xpoint1): The coordinates of the second point
-            (Xpoint2 ,Xpoint2): The coordinates of the third point
-            (Xpoint3 ,Xpoint3): The coordinates of the fourth point
-            hwFac   :   Percentage of error
-*******************************************************************************/
 static void TP_ShowInfo(POINT Xpoint0, POINT Ypoint0, POINT Xpoint1,
                         POINT Ypoint1, POINT Xpoint2, POINT Ypoint2,
                         POINT Xpoint3, POINT Ypoint3, POINT hwFac) {
@@ -363,10 +345,6 @@ static void TP_Adjust_HandleFail(unsigned char Mar_Val, const POINT XYpoint_Arr[
   TP_DrawCross(Mar_Val, Mar_Val, RED);
 }
 
-/*******************************************************************************
-  function:
-        Touch screen adjust
-*******************************************************************************/
 void TP_Adjust(void) {
   unsigned char cnt = 0;
   POINT XYpoint_Arr[4][2];
@@ -460,71 +438,44 @@ void TP_Adjust(void) {
 
         // According to the display direction to get
         // the corresponding scale factor and offset
-        if (sTP_DEV.TP_Scan_Dir == R2L_D2U) {
-          DEBUG("R2L_D2U");
+        {
+          int16_t dx = 0, dy = 0, sx = 0, sy = 0;
+          if (sTP_DEV.TP_Scan_Dir == R2L_D2U) {
+            DEBUG("R2L_D2U");
+            dx = XYpoint_Arr[1][0] - XYpoint_Arr[0][0];
+            dy = XYpoint_Arr[2][1] - XYpoint_Arr[0][1];
+            sx = XYpoint_Arr[1][0] + XYpoint_Arr[0][0];
+            sy = XYpoint_Arr[2][1] + XYpoint_Arr[0][1];
+          } else if (sTP_DEV.TP_Scan_Dir == L2R_U2D) {
+            DEBUG("L2R_U2D");
+            dx = XYpoint_Arr[0][0] - XYpoint_Arr[1][0];
+            dy = XYpoint_Arr[0][1] - XYpoint_Arr[2][1];
+            sx = XYpoint_Arr[0][0] + XYpoint_Arr[1][0];
+            sy = XYpoint_Arr[0][1] + XYpoint_Arr[2][1];
+          } else if (sTP_DEV.TP_Scan_Dir == U2D_R2L) {
+            DEBUG("U2D_R2L");
+            dx = XYpoint_Arr[1][1] - XYpoint_Arr[0][1];
+            dy = XYpoint_Arr[2][0] - XYpoint_Arr[0][0];
+            sx = XYpoint_Arr[1][1] + XYpoint_Arr[0][1];
+            sy = XYpoint_Arr[2][0] + XYpoint_Arr[0][0];
+          } else {
+            DEBUG("D2U_L2R");
+            dx = XYpoint_Arr[0][1] - XYpoint_Arr[1][1];
+            dy = XYpoint_Arr[0][0] - XYpoint_Arr[2][0];
+            sx = XYpoint_Arr[0][1] + XYpoint_Arr[1][1];
+            sy = XYpoint_Arr[0][0] + XYpoint_Arr[2][0];
+          }
 
-          sTP_DEV.fXfac = (float)(sLCD_DIS.LCD_Dis_Column - 2 * Mar_Val) /
-                          (int16_t)(XYpoint_Arr[1][0] - XYpoint_Arr[0][0]);
-          sTP_DEV.fYfac = (float)(sLCD_DIS.LCD_Dis_Page - 2 * Mar_Val) /
-                          (int16_t)(XYpoint_Arr[2][1] - XYpoint_Arr[0][1]);
+          if (dx == 0 || dy == 0) {
+              DEBUG("Calibration divide by zero error");
+              cnt = 0;
+              continue;
+          }
 
-          sTP_DEV.iXoff =
-              (sLCD_DIS.LCD_Dis_Column -
-               sTP_DEV.fXfac * (XYpoint_Arr[1][0] + XYpoint_Arr[0][0])) /
-              2;
-          sTP_DEV.iYoff =
-              (sLCD_DIS.LCD_Dis_Page -
-               sTP_DEV.fYfac * (XYpoint_Arr[2][1] + XYpoint_Arr[0][1])) /
-              2;
-
-        } else if (sTP_DEV.TP_Scan_Dir == L2R_U2D) {
-          DEBUG("L2R_U2D");
-
-          sTP_DEV.fXfac = (float)(sLCD_DIS.LCD_Dis_Column - 2 * Mar_Val) /
-                          (int16_t)(XYpoint_Arr[0][0] - XYpoint_Arr[1][0]);
-          sTP_DEV.fYfac = (float)(sLCD_DIS.LCD_Dis_Page - 2 * Mar_Val) /
-                          (int16_t)(XYpoint_Arr[0][1] - XYpoint_Arr[2][1]);
-
-          sTP_DEV.iXoff =
-              (sLCD_DIS.LCD_Dis_Column -
-               sTP_DEV.fXfac * (XYpoint_Arr[0][0] + XYpoint_Arr[1][0])) /
-              2;
-          sTP_DEV.iYoff =
-              (sLCD_DIS.LCD_Dis_Page -
-               sTP_DEV.fYfac * (XYpoint_Arr[0][1] + XYpoint_Arr[2][1])) /
-              2;
-        } else if (sTP_DEV.TP_Scan_Dir == U2D_R2L) {
-          DEBUG("U2D_R2L");
-
-          sTP_DEV.fXfac = (float)(sLCD_DIS.LCD_Dis_Column - 2 * Mar_Val) /
-                          (int16_t)(XYpoint_Arr[1][1] - XYpoint_Arr[0][1]);
-          sTP_DEV.fYfac = (float)(sLCD_DIS.LCD_Dis_Page - 2 * Mar_Val) /
-                          (int16_t)(XYpoint_Arr[2][0] - XYpoint_Arr[0][0]);
-
-          sTP_DEV.iXoff =
-              (sLCD_DIS.LCD_Dis_Column -
-               sTP_DEV.fXfac * (XYpoint_Arr[1][1] + XYpoint_Arr[0][1])) /
-              2;
-          sTP_DEV.iYoff =
-              (sLCD_DIS.LCD_Dis_Page -
-               sTP_DEV.fYfac * (XYpoint_Arr[2][0] + XYpoint_Arr[0][0])) /
-              2;
-        } else {
-          DEBUG("D2U_L2R");
-
-          sTP_DEV.fXfac = (float)(sLCD_DIS.LCD_Dis_Column - 2 * Mar_Val) /
-                          (int16_t)(XYpoint_Arr[0][1] - XYpoint_Arr[1][1]);
-          sTP_DEV.fYfac = (float)(sLCD_DIS.LCD_Dis_Page - 2 * Mar_Val) /
-                          (int16_t)(XYpoint_Arr[0][0] - XYpoint_Arr[2][0]);
-
-          sTP_DEV.iXoff =
-              (sLCD_DIS.LCD_Dis_Column -
-               sTP_DEV.fXfac * (XYpoint_Arr[0][1] + XYpoint_Arr[1][1])) /
-              2;
-          sTP_DEV.iYoff =
-              (sLCD_DIS.LCD_Dis_Page -
-               sTP_DEV.fYfac * (XYpoint_Arr[0][0] + XYpoint_Arr[2][0])) /
-              2;
+          sTP_DEV.fXfac = (float)(sLCD_DIS.LCD_Dis_Column - 2 * Mar_Val) / dx;
+          sTP_DEV.fYfac = (float)(sLCD_DIS.LCD_Dis_Page - 2 * Mar_Val) / dy;
+          sTP_DEV.iXoff = (sLCD_DIS.LCD_Dis_Column - sTP_DEV.fXfac * sx) / 2;
+          sTP_DEV.iYoff = (sLCD_DIS.LCD_Dis_Page - sTP_DEV.fYfac * sy) / 2;
         }
 
         DEBUG("sTP_DEV.fXfac = %f", sTP_DEV.fXfac);
@@ -554,10 +505,6 @@ void TP_Adjust(void) {
   }
 }
 
-/*******************************************************************************
-  function:
-        Use the default calibration factor
-*******************************************************************************/
 void TP_GetAdFac(void) {
   if (sTP_DEV.TP_Scan_Dir == D2U_L2R) { // SCAN_DIR_DFT = D2U_L2R
     sTP_DEV.fXfac = -0.132443F;
@@ -587,53 +534,22 @@ void TP_GetAdFac(void) {
   }
 }
 
-/*******************************************************************************
-  function:
-        Paint the Delete key and paint color choose area
-*******************************************************************************/
 void TP_Dialog(void) {
   LCD_Clear(LCD_BACKGROUND);
   DEBUG("Drawing...");
   // Horizontal screen display
-  if (sLCD_DIS.LCD_Dis_Column > sLCD_DIS.LCD_Dis_Page) {
-    // Clear screen
-    GUI_DisString_EN(sLCD_DIS.LCD_Dis_Column - 60, 0, "CLEAR", &Font16, RED,
-                     BLUE);
-    // adjustment
-    GUI_DisString_EN(sLCD_DIS.LCD_Dis_Column - 120, 0, "AD", &Font24, RED,
-                     BLUE);
-    // choose the color
-    GUI_DrawRectangle(sLCD_DIS.LCD_Dis_Column - 50, 20, sLCD_DIS.LCD_Dis_Column,
-                      70, BLUE, DRAW_FULL, DOT_PIXEL_1X1);
-    GUI_DrawRectangle(sLCD_DIS.LCD_Dis_Column - 50, 80, sLCD_DIS.LCD_Dis_Column,
-                      130, GREEN, DRAW_FULL, DOT_PIXEL_1X1);
-    GUI_DrawRectangle(sLCD_DIS.LCD_Dis_Column - 50, 140,
-                      sLCD_DIS.LCD_Dis_Column, 190, RED, DRAW_FULL,
-                      DOT_PIXEL_1X1);
-    GUI_DrawRectangle(sLCD_DIS.LCD_Dis_Column - 50, 200,
-                      sLCD_DIS.LCD_Dis_Column, 250, YELLOW, DRAW_FULL,
-                      DOT_PIXEL_1X1);
-    GUI_DrawRectangle(sLCD_DIS.LCD_Dis_Column - 50, 260,
-                      sLCD_DIS.LCD_Dis_Column, 310, BLACK, DRAW_FULL,
-                      DOT_PIXEL_1X1);
-
-  } else { // Vertical screen display
-    GUI_DisString_EN(sLCD_DIS.LCD_Dis_Column - 60, 0, "CLEAR", &Font16, RED,
-                     BLUE);
-    GUI_DisString_EN(sLCD_DIS.LCD_Dis_Column - 120, 0, "AD", &Font24, RED,
-                     BLUE);
-    GUI_DrawRectangle(20, 20, 70, 70, BLUE, DRAW_FULL, DOT_PIXEL_1X1);
-    GUI_DrawRectangle(80, 20, 130, 70, GREEN, DRAW_FULL, DOT_PIXEL_1X1);
-    GUI_DrawRectangle(140, 20, 190, 70, RED, DRAW_FULL, DOT_PIXEL_1X1);
-    GUI_DrawRectangle(200, 20, 250, 70, YELLOW, DRAW_FULL, DOT_PIXEL_1X1);
-    GUI_DrawRectangle(260, 20, 310, 70, BLACK, DRAW_FULL, DOT_PIXEL_1X1);
+  GUI_DisString_EN(sLCD_DIS.LCD_Dis_Column - 60, 0, "CLEAR", &Font16, RED, BLUE);
+  GUI_DisString_EN(sLCD_DIS.LCD_Dis_Column - 120, 0, "AD", &Font24, RED, BLUE);
+  const COLOR colors[] = {BLUE, GREEN, RED, YELLOW, BLACK};
+  for (int i = 0; i < 5; i++) {
+    if (sLCD_DIS.LCD_Dis_Column > sLCD_DIS.LCD_Dis_Page) {
+      GUI_DrawRectangle(sLCD_DIS.LCD_Dis_Column - 50, 20 + i * 60, sLCD_DIS.LCD_Dis_Column, 70 + i * 60, colors[i], DRAW_FULL, DOT_PIXEL_1X1);
+    } else {
+      GUI_DrawRectangle(20 + i * 60, 20, 70 + i * 60, 70, colors[i], DRAW_FULL, DOT_PIXEL_1X1);
+    }
   }
 }
 
-/*******************************************************************************
-  function:
-        Draw Board
-*******************************************************************************/
 void TP_DrawBoard(void) {
   //  sTP_DEV.chStatus &= ~(1 << 6);
   TP_Scan(0);
@@ -656,64 +572,28 @@ void TP_DrawBoard(void) {
       }
 
       // Judgment is horizontal screen
-      if (sLCD_DIS.LCD_Dis_Column > sLCD_DIS.LCD_Dis_Page) {
-        if (sTP_Draw.Xpoint > (sLCD_DIS.LCD_Dis_Column - 50) &&
-                   sTP_Draw.Ypoint > 20 && sTP_Draw.Ypoint < 70) {
-          sTP_Draw.Color = BLUE;
-        } else if (sTP_Draw.Xpoint > (sLCD_DIS.LCD_Dis_Column - 50) &&
-                   sTP_Draw.Ypoint > 80 && sTP_Draw.Ypoint < 130) {
-          sTP_Draw.Color = GREEN;
-        } else if (sTP_Draw.Xpoint > (sLCD_DIS.LCD_Dis_Column - 50) &&
-                   sTP_Draw.Ypoint > 140 && sTP_Draw.Ypoint < 190) {
-          sTP_Draw.Color = RED;
-        } else if (sTP_Draw.Xpoint > (sLCD_DIS.LCD_Dis_Column - 50) &&
-                   sTP_Draw.Ypoint > 200 && sTP_Draw.Ypoint < 250) {
-          sTP_Draw.Color = YELLOW;
-        } else if (sTP_Draw.Xpoint > (sLCD_DIS.LCD_Dis_Column - 50) &&
-                   sTP_Draw.Ypoint > 260 && sTP_Draw.Ypoint < 310) {
-          sTP_Draw.Color = BLACK;
+      bool color_changed = false;
+      const COLOR colors[] = {BLUE, GREEN, RED, YELLOW, BLACK};
+      for (int i = 0; i < 5; i++) {
+        bool hit = false;
+        if (sLCD_DIS.LCD_Dis_Column > sLCD_DIS.LCD_Dis_Page) {
+            hit = (sTP_Draw.Xpoint > (sLCD_DIS.LCD_Dis_Column - 50) && sTP_Draw.Ypoint > (20 + i * 60) && sTP_Draw.Ypoint < (70 + i * 60));
         } else {
-          GUI_DrawPoint(sTP_Draw.Xpoint, sTP_Draw.Ypoint, sTP_Draw.Color,
-                        DOT_PIXEL_1X1, DOT_FILL_RIGHTUP);
-          GUI_DrawPoint(sTP_Draw.Xpoint + 1, sTP_Draw.Ypoint, sTP_Draw.Color,
-                        DOT_PIXEL_1X1, DOT_FILL_RIGHTUP);
-          GUI_DrawPoint(sTP_Draw.Xpoint, sTP_Draw.Ypoint + 1, sTP_Draw.Color,
-                        DOT_PIXEL_1X1, DOT_FILL_RIGHTUP);
-          GUI_DrawPoint(sTP_Draw.Xpoint + 1, sTP_Draw.Ypoint + 1,
-                        sTP_Draw.Color, DOT_PIXEL_1X1, DOT_FILL_RIGHTUP);
-          GUI_DrawPoint(sTP_Draw.Xpoint, sTP_Draw.Ypoint, sTP_Draw.Color,
-                        DOT_PIXEL_2X2, DOT_FILL_RIGHTUP);
+            hit = (sTP_Draw.Ypoint > 20 && sTP_Draw.Ypoint < 70 && sTP_Draw.Xpoint > (20 + i * 60) && sTP_Draw.Xpoint < (70 + i * 60));
         }
-        // Vertical screen
-      } else {
-        if (sTP_Draw.Xpoint > 20 && sTP_Draw.Xpoint < 70 &&
-                   sTP_Draw.Ypoint > 20 && sTP_Draw.Ypoint < 70) {
-          sTP_Draw.Color = BLUE;
-        } else if (sTP_Draw.Xpoint > 80 && sTP_Draw.Xpoint < 130 &&
-                   sTP_Draw.Ypoint > 20 && sTP_Draw.Ypoint < 70) {
-          sTP_Draw.Color = GREEN;
-        } else if (sTP_Draw.Xpoint > 140 && sTP_Draw.Xpoint < 190 &&
-                   sTP_Draw.Ypoint > 20 && sTP_Draw.Ypoint < 70) {
-          sTP_Draw.Color = RED;
-        } else if (sTP_Draw.Xpoint > 200 && sTP_Draw.Xpoint < 250 &&
-                   sTP_Draw.Ypoint > 20 && sTP_Draw.Ypoint < 70) {
-          sTP_Draw.Color = YELLOW;
-        } else if (sTP_Draw.Xpoint > 260 && sTP_Draw.Xpoint < 310 &&
-                   sTP_Draw.Ypoint > 20 && sTP_Draw.Ypoint < 70) {
-          sTP_Draw.Color = BLACK;
-        } else {
-          GUI_DrawPoint(sTP_Draw.Xpoint, sTP_Draw.Ypoint, sTP_Draw.Color,
-                        DOT_PIXEL_2X2, DOT_FILL_RIGHTUP);
+        if (hit) {
+          sTP_Draw.Color = colors[i];
+          color_changed = true;
+          break;
         }
+      }
+      if (!color_changed) {
+        GUI_DrawPoint(sTP_Draw.Xpoint, sTP_Draw.Ypoint, sTP_Draw.Color, DOT_PIXEL_2X2, DOT_FILL_RIGHTUP);
       }
     }
   }
 }
 
-/*******************************************************************************
-  function:
-        Touch pad initialization
-*******************************************************************************/
 void TP_Init(LCD_SCAN_DIR Lcd_ScanDir) {
   TP_CS_1;
 

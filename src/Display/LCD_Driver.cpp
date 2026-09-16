@@ -58,10 +58,6 @@ void LCD_WriteData(uint8_t Data)
     LCD_CS_1;
 }
 
-/*******************************************************************************
-function:
-		Write register data
-*******************************************************************************/
 static void LCD_Write_AllData(uint16_t Data, uint32_t DataLen)
 {
     uint32_t i;
@@ -74,10 +70,6 @@ static void LCD_Write_AllData(uint16_t Data, uint32_t DataLen)
     LCD_CS_1;
 }
 
-/*******************************************************************************
-function:
-		Common register initialization
-*******************************************************************************/
 static void LCD_InitReg(void)
 {
     LCD_WriteReg(0XF9);
@@ -351,13 +343,7 @@ parameter:
 	Yend   :   End point coordinates
 	Color  :   Set the color
 ********************************************************************************/
-void LCD_SetArealColor(POINT Xstart, POINT Ystart, POINT Xend, POINT Yend,	COLOR Color)
-{
-    if((Xend > Xstart) && (Yend > Ystart)) {
-        LCD_SetWindow(Xstart , Ystart , Xend , Yend  );
-        LCD_SetColor ( Color , Xend - Xstart, Yend - Ystart);
-    }
-}
+
 
 /********************************************************************************
 function:
@@ -365,7 +351,7 @@ function:
 ********************************************************************************/
 void LCD_Clear(COLOR  Color)
 {
-    LCD_SetArealColor(0, 0, sLCD_DIS.LCD_Dis_Column , sLCD_DIS.LCD_Dis_Page , Color);
+    LCD_SetColor(Color, sLCD_DIS.LCD_Dis_Column, sLCD_DIS.LCD_Dis_Page);
 }
 
 #endif // ARDUINO

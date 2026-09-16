@@ -16,7 +16,7 @@ jobs:
           submodules: recursive
 
       - name: Setup Arduino CLI
-        uses: arduino/setup-arduino-cli@v1
+        uses: arduino/setup-arduino-cli@v2
 
       - name: Install dependencies
         run: |
