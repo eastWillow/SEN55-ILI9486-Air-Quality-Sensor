@@ -538,12 +538,11 @@ void TP_Dialog(void) {
   LCD_Clear(LCD_BACKGROUND);
   DEBUG("Drawing...");
   // Horizontal screen display
-  bool is_horizontal = sLCD_DIS.LCD_Dis_Column > sLCD_DIS.LCD_Dis_Page;
   GUI_DisString_EN(sLCD_DIS.LCD_Dis_Column - 60, 0, "CLEAR", &Font16, RED, BLUE);
   GUI_DisString_EN(sLCD_DIS.LCD_Dis_Column - 120, 0, "AD", &Font24, RED, BLUE);
   const COLOR colors[] = {BLUE, GREEN, RED, YELLOW, BLACK};
   for (int i = 0; i < 5; i++) {
-    if (is_horizontal) {
+    if (sLCD_DIS.LCD_Dis_Column > sLCD_DIS.LCD_Dis_Page) {
       GUI_DrawRectangle(sLCD_DIS.LCD_Dis_Column - 50, 20 + i * 60, sLCD_DIS.LCD_Dis_Column, 70 + i * 60, colors[i], DRAW_FULL, DOT_PIXEL_1X1);
     } else {
       GUI_DrawRectangle(20 + i * 60, 20, 70 + i * 60, 70, colors[i], DRAW_FULL, DOT_PIXEL_1X1);
@@ -573,13 +572,15 @@ void TP_DrawBoard(void) {
       }
 
       // Judgment is horizontal screen
-      bool is_horizontal = sLCD_DIS.LCD_Dis_Column > sLCD_DIS.LCD_Dis_Page;
       bool color_changed = false;
       const COLOR colors[] = {BLUE, GREEN, RED, YELLOW, BLACK};
       for (int i = 0; i < 5; i++) {
-        bool hit = is_horizontal ?
-                   (sTP_Draw.Xpoint > (sLCD_DIS.LCD_Dis_Column - 50) && sTP_Draw.Ypoint > (20 + i * 60) && sTP_Draw.Ypoint < (70 + i * 60)) :
-                   (sTP_Draw.Ypoint > 20 && sTP_Draw.Ypoint < 70 && sTP_Draw.Xpoint > (20 + i * 60) && sTP_Draw.Xpoint < (70 + i * 60));
+        bool hit = false;
+        if (sLCD_DIS.LCD_Dis_Column > sLCD_DIS.LCD_Dis_Page) {
+            hit = (sTP_Draw.Xpoint > (sLCD_DIS.LCD_Dis_Column - 50) && sTP_Draw.Ypoint > (20 + i * 60) && sTP_Draw.Ypoint < (70 + i * 60));
+        } else {
+            hit = (sTP_Draw.Ypoint > 20 && sTP_Draw.Ypoint < 70 && sTP_Draw.Xpoint > (20 + i * 60) && sTP_Draw.Xpoint < (70 + i * 60));
+        }
         if (hit) {
           sTP_Draw.Color = colors[i];
           color_changed = true;
