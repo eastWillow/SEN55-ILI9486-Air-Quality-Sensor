@@ -289,14 +289,6 @@ static bool TP_Read_TwiceADC(POINT *pXCh_Adc, POINT *pYCh_Adc) {
 }
 #endif
 
-/*******************************************************************************
-  function:
-        Draw Cross
-  parameter:
-            Xpoint :    The x coordinate of the point
-            Ypoint :    The y coordinate of the point
-            Color  :    Set color
-*******************************************************************************/
 static void TP_DrawCross(POINT Xpoint, POINT Ypoint, COLOR Color) {
   GUI_DrawLine(Xpoint - 12, Ypoint, Xpoint + 12, Ypoint, Color, LINE_SOLID,
                DOT_PIXEL_1X1);
@@ -306,16 +298,6 @@ static void TP_DrawCross(POINT Xpoint, POINT Ypoint, COLOR Color) {
   GUI_DrawCircle(Xpoint, Ypoint, 6, Color, DRAW_EMPTY, DOT_PIXEL_1X1);
 }
 
-/*******************************************************************************
-  function:
-        The corresponding ADC value is displayed on the LC
-  parameter:
-            (Xpoint0 ,Xpoint0): The coordinates of the first point
-            (Xpoint1 ,Xpoint1): The coordinates of the second point
-            (Xpoint2 ,Xpoint2): The coordinates of the third point
-            (Xpoint3 ,Xpoint3): The coordinates of the fourth point
-            hwFac   :   Percentage of error
-*******************************************************************************/
 static void TP_ShowInfo(POINT Xpoint0, POINT Ypoint0, POINT Xpoint1,
                         POINT Ypoint1, POINT Xpoint2, POINT Ypoint2,
                         POINT Xpoint3, POINT Ypoint3, POINT hwFac) {
@@ -363,10 +345,6 @@ static void TP_Adjust_HandleFail(unsigned char Mar_Val, const POINT XYpoint_Arr[
   TP_DrawCross(Mar_Val, Mar_Val, RED);
 }
 
-/*******************************************************************************
-  function:
-        Touch screen adjust
-*******************************************************************************/
 void TP_Adjust(void) {
   unsigned char cnt = 0;
   POINT XYpoint_Arr[4][2];
@@ -527,10 +505,6 @@ void TP_Adjust(void) {
   }
 }
 
-/*******************************************************************************
-  function:
-        Use the default calibration factor
-*******************************************************************************/
 void TP_GetAdFac(void) {
   if (sTP_DEV.TP_Scan_Dir == D2U_L2R) { // SCAN_DIR_DFT = D2U_L2R
     sTP_DEV.fXfac = -0.132443F;
@@ -560,38 +534,23 @@ void TP_GetAdFac(void) {
   }
 }
 
-/*******************************************************************************
-  function:
-        Paint the Delete key and paint color choose area
-*******************************************************************************/
 void TP_Dialog(void) {
   LCD_Clear(LCD_BACKGROUND);
   DEBUG("Drawing...");
   // Horizontal screen display
-  if (sLCD_DIS.LCD_Dis_Column > sLCD_DIS.LCD_Dis_Page) {
-    // Clear screen
-    GUI_DisString_EN(sLCD_DIS.LCD_Dis_Column - 60, 0, "CLEAR", &Font16, RED, BLUE);
-    // adjustment
-    GUI_DisString_EN(sLCD_DIS.LCD_Dis_Column - 120, 0, "AD", &Font24, RED, BLUE);
-    // choose the color
-    const COLOR colors[] = {BLUE, GREEN, RED, YELLOW, BLACK};
-    for (int i = 0; i < 5; i++) {
+  bool is_horizontal = sLCD_DIS.LCD_Dis_Column > sLCD_DIS.LCD_Dis_Page;
+  GUI_DisString_EN(sLCD_DIS.LCD_Dis_Column - 60, 0, "CLEAR", &Font16, RED, BLUE);
+  GUI_DisString_EN(sLCD_DIS.LCD_Dis_Column - 120, 0, "AD", &Font24, RED, BLUE);
+  const COLOR colors[] = {BLUE, GREEN, RED, YELLOW, BLACK};
+  for (int i = 0; i < 5; i++) {
+    if (is_horizontal) {
       GUI_DrawRectangle(sLCD_DIS.LCD_Dis_Column - 50, 20 + i * 60, sLCD_DIS.LCD_Dis_Column, 70 + i * 60, colors[i], DRAW_FULL, DOT_PIXEL_1X1);
-    }
-  } else { // Vertical screen display
-    GUI_DisString_EN(sLCD_DIS.LCD_Dis_Column - 60, 0, "CLEAR", &Font16, RED, BLUE);
-    GUI_DisString_EN(sLCD_DIS.LCD_Dis_Column - 120, 0, "AD", &Font24, RED, BLUE);
-    const COLOR colors[] = {BLUE, GREEN, RED, YELLOW, BLACK};
-    for (int i = 0; i < 5; i++) {
+    } else {
       GUI_DrawRectangle(20 + i * 60, 20, 70 + i * 60, 70, colors[i], DRAW_FULL, DOT_PIXEL_1X1);
     }
   }
 }
 
-/*******************************************************************************
-  function:
-        Draw Board
-*******************************************************************************/
 void TP_DrawBoard(void) {
   //  sTP_DEV.chStatus &= ~(1 << 6);
   TP_Scan(0);
@@ -613,10 +572,10 @@ void TP_DrawBoard(void) {
         return;
       }
 
-      // Handle color selection and drawing
+      // Judgment is horizontal screen
       bool is_horizontal = sLCD_DIS.LCD_Dis_Column > sLCD_DIS.LCD_Dis_Page;
-      const COLOR colors[] = {BLUE, GREEN, RED, YELLOW, BLACK};
       bool color_changed = false;
+      const COLOR colors[] = {BLUE, GREEN, RED, YELLOW, BLACK};
       for (int i = 0; i < 5; i++) {
         bool hit = is_horizontal ?
                    (sTP_Draw.Xpoint > (sLCD_DIS.LCD_Dis_Column - 50) && sTP_Draw.Ypoint > (20 + i * 60) && sTP_Draw.Ypoint < (70 + i * 60)) :
@@ -634,11 +593,6 @@ void TP_DrawBoard(void) {
   }
 }
 
-
-/*******************************************************************************
-  function:
-        Touch pad initialization
-*******************************************************************************/
 void TP_Init(LCD_SCAN_DIR Lcd_ScanDir) {
   TP_CS_1;
 
