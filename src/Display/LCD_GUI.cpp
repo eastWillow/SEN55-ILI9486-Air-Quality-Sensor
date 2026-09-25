@@ -565,6 +565,12 @@ void GUI_Showtime(POINT Xstart, POINT Ystart, POINT Xend, POINT Yend,
     }
   }
 
+  // Security: Sanitize inputs to prevent out-of-bounds reads on the value array (0-9)
+  // If an external RTC supplies corrupted/malicious data > 99, division by 10 exceeds the array bounds.
+  pTime->Sec %= 60;
+  pTime->Min %= 60;
+  pTime->Hour %= 24;
+
   // Partial clear to prevent flickering
   if ((pTime->Sec % 10) > 0) {
     LCD_SetArealColor(Xstart + Dx * 6, Ystart, Xend, Yend, WHITE); // xx:xx:x0
