@@ -6,6 +6,8 @@
 *					rectangle, solid circle hollow circle.
 * | Info        :   Basic version
 *
+* | Info        :   Basic version
+*
 ******************************************************************************/
 
 /****************************Upper application layer**************************/

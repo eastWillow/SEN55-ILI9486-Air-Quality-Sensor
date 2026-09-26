@@ -9,6 +9,8 @@
 * | Function    :	LCD Touch Pad Driver and Draw
 * | Info        :   Basic version
 *
+* | Info        :   Basic version
+*
 ******************************************************************************/
 #ifndef __LCD_TOUCH_H_
 #define __LCD_TOUCH_H_

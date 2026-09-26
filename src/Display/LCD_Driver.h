@@ -4,6 +4,8 @@
 * | Function    :	ILI9486 Drive function
 * | Info        :   Basic version
 *
+* | Info        :   Basic version
+*
 ******************************************************************************/
 
 /**************************Intermediate driver layer**************************/
