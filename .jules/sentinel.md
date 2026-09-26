@@ -15,3 +15,7 @@
 **Vulnerability:** Missing NULL pointer validation in embedded UI libraries causing potential Denial of Service (device crash).
 **Learning:** Embedded systems are susceptible to crashes if pointers are not verified before dereferencing.
 **Prevention:** Validate all pointers passed as arguments in public APIs before dereferencing them.
+## 2024-09-25 - [HIGH] Out-of-Bounds Memory Read in Time Display
+**Vulnerability:** The `GUI_Showtime` function read `pTime->Hour`, `pTime->Min`, and `pTime->Sec` and divided them by 10 to index into a 10-element array. If an external RTC supplied corrupted or malicious values > 99, this caused an out-of-bounds memory read.
+**Learning:** Functions rendering external/untrusted numerical data must explicitly sanitize values to expected bounds before using them in arithmetic that dictates array indices.
+**Prevention:** Implemented modulus operations (`pTime->Hour %= 24`, etc.) before array lookups to guarantee values remain strictly within valid bounds, regardless of the input data state.
