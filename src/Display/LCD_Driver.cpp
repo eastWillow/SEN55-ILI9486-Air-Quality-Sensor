@@ -343,6 +343,14 @@ parameter:
 	Yend   :   End point coordinates
 	Color  :   Set the color
 ********************************************************************************/
+void LCD_SetArealColor(POINT Xstart, POINT Ystart, POINT Xend, POINT Yend,
+                       COLOR Color)
+{
+    if ((Xend > Xstart) && (Yend > Ystart)) {
+        LCD_SetWindow(Xstart, Ystart, Xend, Yend);
+        LCD_SetColor(Color, Xend - Xstart, Yend - Ystart);
+    }
+}
 
 
 /********************************************************************************
