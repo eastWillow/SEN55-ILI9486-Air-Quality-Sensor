@@ -35,3 +35,6 @@
 ## 2024-07-26 - Prevent Redundant Full-Screen Redraws in UI Loops
 **Learning:** In embedded systems, triggering expensive rendering functions (like `DrawTrendChart`, which clears a large area and draws hundreds of lines) unconditionally on a time interval within the main event loop wastes immense CPU cycles and SPI bandwidth if the underlying data hasn't changed.
 **Action:** Decouple UI rendering from the main loop's check interval. Use boolean flags (e.g., `trendUpdated = true`) set during data mutation (e.g., `RecordTrendData`) to conditionally trigger the redraw in the main loop, immediately resetting the flag to `false`.
+## 2024-07-28 - Optimize font and bitmap rendering memory reads
+**Learning:** In embedded graphics systems, iterating over characters or bitmaps pixel-by-pixel implies reading from memory (or program flash using `pgm_read_byte` on Arduino) and evaluating pointer arithmetic `(W * H)` times. Since the bitmask represents 8 pixels per byte, the exact same memory fetch is redundant for 7 out of 8 pixels.
+**Action:** When rendering fonts or bitmaps where 1 byte maps to 8 pixels, cache the byte reading operation at the start of each 8-pixel block (e.g., `if (Column % 8 == 0)`). This drastically reduces the number of memory accesses and pointer evaluations by a factor of 8.

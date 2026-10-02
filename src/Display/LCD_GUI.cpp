@@ -300,14 +300,18 @@ void GUI_DisChar(POINT Xpoint, POINT Ypoint, const char Acsii_Char,
 
   for (Page = 0; Page < Font->Height; Page ++ ) {
     int16_t startCol = -1;
+    uint8_t current_byte = 0;
     for (Column = 0; Column < Font->Width; Column ++ ) {
 
-      bool active = false;
-      #ifdef ARDUINO
-      active = pgm_read_byte(ptr) & (0x80 >> (Column % 8));
-      #else
-      active = *ptr & (0x80 >> (Column % 8));
-      #endif
+      if (Column % 8 == 0) {
+        #ifdef ARDUINO
+        current_byte = pgm_read_byte(ptr);
+        #else
+        current_byte = *ptr;
+        #endif
+      }
+
+      bool active = current_byte & (0x80 >> (Column % 8));
 
       if (active) {
         if (startCol == -1) {
@@ -434,8 +438,12 @@ void GUI_Disbitmap(POINT Xpoint, POINT Ypoint, const unsigned char *pMap,
   POINT i, j, byteWidth = (Width + 7) / 8;
   for (j = 0; j < Height; j++) {
     int16_t startCol = -1;
+    uint8_t current_byte = 0;
     for (i = 0; i < Width; i ++) {
-      if (*(pMap + j * byteWidth + i / 8) & (128 >> (i & 7))) {
+      if ((i & 7) == 0) {
+        current_byte = *(pMap + j * byteWidth + i / 8);
+      }
+      if (current_byte & (128 >> (i & 7))) {
         if (startCol == -1) {
           startCol = i;
         }
